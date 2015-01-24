@@ -1,0 +1,60 @@
+{{extend 'layout.html'}}
+
+{{if form:}}
+    {{=form}}
+{{pass}}
+
+{{if product_rows:}}
+<form>
+<table>
+    <tr><td>{{=T('Product Name')}}:</td>
+        <td><select id="product_select">
+                {{for p in product_rows:}}
+                    <option value={{=p.id}}>{{=p.name}}</option>
+                {{pass}}
+        </select></td>
+    </tr>
+    <tr>
+        <td>{{=T('Unit')}}:</td>
+        <td id="unit_text"></td>
+    </tr>
+    <tr>
+        <td>{{=T('Available Quantity Total')}}:</td>
+        <td id="available_quantity_total_text">0</td>
+    </tr>
+        
+    
+
+</table>
+</form>
+{{pass}}
+
+<div id="test">TEST</div>
+
+<script>
+$( document ).ready(function() {
+    $( "#product_select" ).change(function() {
+        var prod_id = $("#product_select").val();
+        var url = '/' + '{{=request.application}}' + '/products/get_unit_name/?product_id=' + prod_id;
+        $.get(url, function(result) {
+            $('#unit_text').text(result);
+        });
+
+        var url2 = '/' + '{{=request.application}}' + '/actual_stock/get_actual_stock_of_product.xml/?product_id=' + prod_id;
+        $.get(url2, function(result) {
+             $('#available_quantity_total_text').text('');
+             $(result).find("item").each(function() {
+                $('#available_quantity_total_text').append($(this).find('product_name').text() + '<br />');
+             });
+        });
+
+        /* var url2 = '/' + '{{=request.application}}' + '/actual_stock/get_actual_stock_of_product/?product_id=' + prod_id;
+        $.get(url2, function(result) {
+            alert(result);
+        #$('#no_table_quantity').val(result);
+        }); */
+
+    });
+});
+    
+</script>

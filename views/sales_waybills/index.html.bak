@@ -1,0 +1,16 @@
+{{extend 'layout.html'}}
+
+<script>
+    alert("anyad!");
+$( document ).ready(function() {
+    alert("vxcvy");
+    
+    $( "#no_table_product" ).change(function() {
+        alert("kocsog!!!");
+    });
+});
+</script>
+
+
+
+{{=waybill_list}}

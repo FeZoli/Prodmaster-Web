@@ -1,0 +1,20 @@
+{{extend 'layout.html'}}
+{{=movement_list}}
+
+<script>
+$( document ).ready(function() {
+    $( "#stock_product_id" ).change(function() {
+        var prod_id = $("#stock_product_id").val();
+        var url = '/' + '{{=request.application}}' + '/waybills/get_unit/?product_id=' + prod_id;
+    $.get(url, function(result) {
+        $('#stock_unit').val(result);
+        });
+    });
+    $( "#stock_source_partner_id" ).change(function() {
+        $('#stock_source_partner_name').val($("#stock_source_partner_id :selected").text());
+    });
+    $( "#stock_target_partner_id" ).change(function() {
+        $('#stock_target_partner_name').val($("#stock_target_partner_id :selected").text());
+    });
+});
+</script>

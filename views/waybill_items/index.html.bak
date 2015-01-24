@@ -1,0 +1,3 @@
+{{extend 'layout.html'}}
+<h2>Zolikám!!!</h2>
+{{=waybill_item_list}}

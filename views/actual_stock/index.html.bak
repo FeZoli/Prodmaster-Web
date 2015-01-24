@@ -1,0 +1,41 @@
+{{extend 'layout.html'}}
+
+<script>
+$( document ).ready(function() {
+    var id = "#prod_" + {{=request.vars.scrollitemid}};
+        $('html, body').animate({
+            scrollTop: $(id).offset().top
+        }, 1000);
+});
+</script>
+
+{{=lsql}}
+
+<table class='web2py_grid'>
+    <tr>
+        <th>{{=T('#')}}</th>
+        <th>{{=T('Product Name')}}</th>
+        <th>{{=T('ID')}}</th>
+        <th>{{=T('Serial ID')}}</th>
+        <th>{{=T('Recorded quantity')}}</th>
+    </tr>
+{{for row in stock_list:}}
+    <tr id="prod_{{=row['stock.product_id']}}">
+        <td>{{if row['stock.id']:}}
+            {{style='font-weight:normal'}}
+            <a href="update_item?id={{=row['stock.id']}}">{{=row['stock.id']}}</a>
+            {{else:}}
+                {{style='font-weight:bold'}}
+            {{pass}}
+        </td>
+        <td style='{{=style}}'>{{=row['stock.product_name']}}</td>
+        <td style='{{=style}}'>{{=row['stock.product_id']}}</td>
+        <td style='{{=style}}'>{{=row['stock.serial_id']}}</td>
+        <td style='{{=style}}'>{{=row['stock.quantity']}}</td>
+    </tr>
+    {{if not row['stock.id']: }}<tr style='height:1ex;'></tr>{{pass}}
+{{pass}}
+    
+</table>
+
+<div id='valag'>valag</div>

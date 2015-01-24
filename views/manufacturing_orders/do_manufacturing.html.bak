@@ -1,0 +1,26 @@
+{{extend 'layout.html'}}
+
+<form id='manufactoring-order-form' method='GET' action='finish_manufacturing'>
+<table>
+{{for block in response._vars:}}
+    <tr>
+    {{b=response._vars[block]}}
+    {{style='color:black;'}}
+    {{if b['actual_stock'] <= 0: style='color:red;'}}
+    <td><h4 style='{{=style}}'>{{=b['name']}}</h4></td>
+    <td><table>
+        <tr><td>Actual stock total:</td><td>{{=b['actual_stock']}}</td></tr>
+        <tr><td>Requested stock by recipe:</td><td>{{=b['requested_stock']}}</td></tr>
+    </table>
+    <table>
+        <tr><th>{{=T('Serial id')}}</th><th>{{=T('Actual')}}</th><th>{{=T('Reserved')}}</th></tr>
+        {{for item in b['info']:}}
+            {{if 'reserved_stock' in b['info'][item]:}}{{input=INPUT(_name='reserved-stock|' + item + '|' + str(b['product_id']), value=b['info'][item]['reserved_stock'])}}
+                <tr><td>{{=item}}</td><td>{{=b['info'][item]['actual_stock']}}</td><td>{{=input}}</td></tr>
+            {{else: pass}}
+        {{pass}}
+    </table></td></tr>
+{{pass}}
+{{=INPUT(_type='SUBMIT')}}
+</table>
+</form>

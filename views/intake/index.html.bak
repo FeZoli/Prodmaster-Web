@@ -1,0 +1,14 @@
+{{extend 'layout.html'}}
+<h2>
+    <table style="width:100%;">
+        <tr>
+            <td>{{=reference}}</td><td>{{=partner_name}}</td><td>{{=date}}</td>
+        </tr>
+    </table>
+</h2>
+<div>
+    {{=waybill_item_list}}
+</div>
+<div>
+    {{=FORM(INPUT(_type='submit', _value=T('Intake')), _action='/' + request.application + '/intake/do_intake')}}
+</div>

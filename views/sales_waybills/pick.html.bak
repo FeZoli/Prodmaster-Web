@@ -1,0 +1,3 @@
+{{extend 'layout.html'}}
+<h1>This is the sales_waybills/pick.html template</h1>
+{{=grid}}
