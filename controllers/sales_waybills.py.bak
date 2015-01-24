@@ -80,24 +80,14 @@ def myoncreate(form):
 @auth.requires_login()
 def manage_items():
     if len(request.args) > 0 and request.args[0] == 'new': return new(request.vars.waybill)
-        
     query = (db.waybill_item.id==request.vars.waybill)#&(db.waybill_item.product==db.product.id)&(db.product.can_be_sold==1)
     return dict(form=SQLFORM.grid(query), product_rows=None)
-
 
 @auth.requires_login()
 def new(waybill_id):
     dataset = db(db.product.can_be_sold==True)
-    rows = dataset.select(db.product.id, db.product.name)
-    
-    
-    
-#    fields.append(Field('product', db.product, requires=IS_IN_DB(dataset, db.product.id, '%(name)s')))
-    #fields.append(Field('unit', db.unit, requires=IS_IN_DB(db, db.unit.id, '%(name)s'), writable=False))
-    #fields.append(Field('quantity', 'double', notnull=True))
-    #fields.append(Field('unit_price_recorded', 'double', notnull=True))
-    
-    # form = SQLFORM.factory(*fields)
-    
-    
+    rows = dataset.select(db.product.id,
+                          db.product.name,
+                          orderby=db.product.name)
+
     return dict(form=None, product_rows=rows)
