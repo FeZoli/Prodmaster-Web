@@ -1,0 +1,83 @@
+# -*- coding: utf-8 -*-
+
+@auth.requires_login()
+def index():
+    grid = SQLFORM.grid(db.manufacturing_order,
+                        links=[dict(header='', body=get_process_link)],
+                        orderby='~planned_date')
+
+    return dict(manufacturing_order_list=grid)
+
+def get_process_link(args):
+    if db.manufacturing_order(args.id).status != 1 : return '' # intake only if recorded
+
+    url = '/' + request.application + '/manufacturing_orders/do_manufacturing?id=' + str(args.id)
+    return A(T('Manufacture !'), _href=url)
+
+@auth.requires_login()
+def do_manufacturing():
+
+    mo = db.manufacturing_order(request.vars.id)
+    product = db.product(mo.product)
+    bom = db(db.bom.product==product.id).select().first()
+    bom_items = db(db.bom_item.bom==bom.id).select()
+    
+    o = dict()
+    
+    
+    for item in bom_items:
+        block = dict()
+        product_set = db(db.product.id==db.stock.product_id)
+        act_products = product_set(db.stock.product_id==item.product.id).select(db.product.name,
+                                                                                db.stock.new_quantity,
+                                                                                db.stock.serial_id,
+                                                                                db.stock.id.max(),
+                                   groupby=(db.stock.product_id, db.stock.serial_id))
+
+        #block['last_sql'] = db._lastsql
+
+        act_prod_id = item.product.id
+        actual_stock = 0
+        act_prod_name = ""
+        requested_stock = 0
+        act_prods_info = dict()
+
+        requested_stock = mo.quantity * (item.quantity / bom.quantity_of_charge)
+        rest_from_order = requested_stock
+
+        ## show stock by serial_id
+        for act_product in act_products:
+            serial_info = dict()
+            actual_item_stock = act_product.stock.new_quantity
+            act_prod_name = act_product.product.name
+            serial_info['actual_stock'] = actual_item_stock
+            if rest_from_order > 0:
+                if actual_item_stock >= rest_from_order:
+                    serial_info['reserved_stock'] = round(rest_from_order, 3)
+                    rest_from_order = 0
+                else:
+                    serial_info['reserved_stock'] = round(actual_item_stock, 3)
+                    rest_from_order = rest_from_order - actual_item_stock
+
+            act_prods_info[act_product.stock.serial_id] = serial_info
+            actual_stock += actual_item_stock
+
+
+        if not act_prod_name:
+            act_prod_name = db.product(item.product.id).name
+
+        block['product_id'] = act_prod_id
+        block['name'] = act_prod_name
+        block['requested_stock'] = round(requested_stock, 3)
+        block['actual_stock'] = actual_stock
+        block['info'] = act_prods_info
+
+        ### debug
+        #block['mo.quantity'] = mo.quantity
+        #block['item.quantity'] = item.quantity
+        #block['bom.quantity_of_charge'] = bom.quantity_of_charge
+        #block['last_sql'] = db._lastsql
+
+        o[act_prod_name] = block
+        
+    return o

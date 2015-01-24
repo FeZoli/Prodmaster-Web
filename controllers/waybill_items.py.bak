@@ -1,0 +1,8 @@
+# -*- coding: utf-8 -*-
+# try something like
+
+from gluon.tools import Crud
+
+@auth.requires_login()
+def index():
+    return dict(waybill_item_list=None)
