@@ -3,6 +3,9 @@
 
 @auth.requires_login()
 def index():
+    
+    return get_actual_stock_of_product()
+    
     relevant_stock_ids = []
 
     s = db(db.product)

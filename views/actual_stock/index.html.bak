@@ -9,7 +9,6 @@ $( document ).ready(function() {
 });
 </script>
 
-{{=lsql}}
 
 <table class='web2py_grid'>
     <tr>
@@ -19,21 +18,21 @@ $( document ).ready(function() {
         <th>{{=T('Serial ID')}}</th>
         <th>{{=T('Recorded quantity')}}</th>
     </tr>
-{{for row in stock_list:}}
-    <tr id="prod_{{=row['stock.product_id']}}">
-        <td>{{if row['stock.id']:}}
+{{for row in data:}}
+    <tr id="prod_{{=row['product_id']}}">
+        <td>{{if row['id']:}}
             {{style='font-weight:normal'}}
-            <a href="update_item?id={{=row['stock.id']}}">{{=row['stock.id']}}</a>
+            <a href="update_item?id={{=row['id']}}">{{=row['id']}}</a>
             {{else:}}
                 {{style='font-weight:bold'}}
             {{pass}}
         </td>
-        <td style='{{=style}}'>{{=row['stock.product_name']}}</td>
-        <td style='{{=style}}'>{{=row['stock.product_id']}}</td>
-        <td style='{{=style}}'>{{=row['stock.serial_id']}}</td>
-        <td style='{{=style}}'>{{=row['stock.quantity']}}</td>
+        <td style='{{=style}}'>{{=row['product_name']}}</td>
+        <td style='{{=style}}'>{{=row['product_id']}}</td>
+        <td style='{{=style}}'>{{=row['serial_id']}}</td>
+        <td style='{{=style}}'>{{=row['quantity']}}</td>
     </tr>
-    {{if not row['stock.id']: }}<tr style='height:1ex;'></tr>{{pass}}
+    {{if not row['id']: }}<tr style='height:1ex;'></tr>{{pass}}
 {{pass}}
     
 </table>

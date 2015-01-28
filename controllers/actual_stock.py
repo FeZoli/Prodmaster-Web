@@ -3,62 +3,7 @@
 
 @auth.requires_login()
 def index():
-    relevant_stock_ids = []
-
-    s = db(db.product)
-    product_rows = s.select(db.product.id)
-
-    for product in product_rows:
-        s = db(db.stock==db.product)
-        q = (db.stock.product_id==product.id) #&(db.stock.new_quantity>0)
-        maxing = db.stock.id.max()
-        stock_rows = s(q).select(maxing,
-                                 db.stock.new_quantity,
-                                 groupby=db.stock.serial_id)
-
-        for stock_row in stock_rows:
-            relevant_stock_ids.append(stock_row._extra[maxing])
-
-    s = db(db.stock)
-    q = (db.stock.id.belongs(relevant_stock_ids))&(db.stock.new_quantity>0)
-    stock_rows = s(q).select(db.stock.id,
-                             db.stock.product_name,
-                             db.stock.product_id,
-                             db.stock.serial_id,
-                             db.stock.new_quantity,
-                             orderby=[db.stock.product_name,db.stock.serial_id])
-
-    tabledata = []
-    prev_prod_id = -1
-    prev_prod_name = ''
-    prod_total_quantity = 0
-    for stock_row in stock_rows:
-        tablerow = dict()
-        tablerow['stock.id'] = stock_row.id
-        tablerow['stock.product_name'] = stock_row.product_name
-        tablerow['stock.product_id'] = stock_row.product_id
-        tablerow['stock.quantity'] = stock_row.new_quantity
-        tablerow['stock.serial_id'] = stock_row.serial_id
-
-        if prev_prod_id == stock_row.product_id:
-            prod_total_quantity += stock_row.new_quantity
-        else:
-            tablerow_sum = dict()
-            tablerow_sum['stock.id'] = ''
-            tablerow_sum['stock.product_name'] = prev_prod_name
-            tablerow_sum['stock.product_id'] = prev_prod_id
-            tablerow_sum['stock.quantity'] = prod_total_quantity
-            tablerow_sum['stock.serial_id'] = T('Total')
-            if prev_prod_id > -1:
-                tabledata.append(tablerow_sum)
-
-            prod_total_quantity = stock_row.new_quantity
-            prev_prod_id = stock_row.product_id
-            prev_prod_name = tablerow['stock.product_name']
-
-        tabledata.append(tablerow)
-
-    return dict(stock_list=tabledata)
+    return get_actual_stock_of_product()
 
 
 @auth.requires_login()

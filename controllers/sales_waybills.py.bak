@@ -3,7 +3,6 @@
 from gluon.tools import Crud
 from copy import deepcopy
 
-
 @auth.requires_login()
 def index():
     query = db.waybill.is_delivery==False
