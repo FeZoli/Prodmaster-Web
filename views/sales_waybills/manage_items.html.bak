@@ -6,7 +6,7 @@
 {{pass}}
 
 {{if product_rows:}}
-<form method="POST">
+<form method="POST" action="/{{=(request.application + '/' + request.controller)}}/add_item">
      <input type="submit" />
 <table>
     <tr><td>{{=T('Product Name')}}:</td>

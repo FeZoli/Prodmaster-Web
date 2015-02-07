@@ -10,10 +10,10 @@ def index():
                         create=False,
                         searchable=False,
                         csv=False)
-    
+
     waybill = db.waybill(request.vars.waybill)
     partner = db.partner(waybill.partner)
-    
+
     return dict(waybill_item_list=grid,
                 partner_name=partner.name,
                 date=waybill.date_of_delivery.isoformat(),
@@ -22,16 +22,18 @@ def index():
 
 @auth.requires_login()
 def do_intake():
-    
+
     wid = request.vars.waybill
-    
+
     waybill = db.waybill(wid)
     if waybill.status != 1:
         response.flash = T('Invalid operation')
         redirect(URL(c='waybills', f='index'))
-    
+
     partner = db.partner(waybill.partner)
     waybill_items = db(db.waybill_item.waybill==wid).select()
+
+    source_reference = 'WB/' + str(waybill.id)
 
     for item in waybill_items:
         # summation of the same serial number items
@@ -49,7 +51,7 @@ def do_intake():
                         source_partner_id=partner.id,
                         source_partner_name=partner.name,
                         source_doc_id=waybill.id,
-                        source_reference=waybill.reference,
+                        source_reference=source_reference,
                         target_partner_id=0,
                         target_partner_name='Ostya 84',
                         date_of_delivery=waybill.date_of_delivery,
@@ -57,9 +59,9 @@ def do_intake():
                         created=request.now,
                         remark=''
                         )
-    
+
         db(db.waybill.id==waybill.id).update(status=2) #delivered
-    
+
     f = [db.stock.product_id,
          db.stock.product_name,
          db.stock.unit,
@@ -71,8 +73,8 @@ def do_intake():
          db.stock.date_of_delivery,
          db.stock.serial_id,
          db.stock.remark]
-    
-    r = db.stock.source_doc_id==wid
+
+    r = db.stock.source_reference==source_reference
     grid = SQLFORM.grid(r,
                         fields=f,
                         create=False,
@@ -80,5 +82,5 @@ def do_intake():
                         deletable=False,
                         searchable=False,
                         csv=True)
-        
+
     return dict(new_stock_items=grid)

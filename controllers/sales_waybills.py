@@ -3,6 +3,9 @@
 from gluon.tools import Crud
 from copy import deepcopy
 
+import stock
+
+
 @auth.requires_login()
 def index():
     query = db.waybill.is_delivery==False
@@ -90,3 +93,16 @@ def new(waybill_id):
                           orderby=db.product.name)
 
     return dict(form=None, product_rows=rows)
+
+
+@auth.requires_login()
+def add_item():
+    quantity = -10
+    for selling_item in request.vars:
+        if selling_item.startswith('sid'):
+            selling_data = selling_item.split(':')
+            serial_id = selling_data[1]
+            quantity = float(request.vars[selling_item])
+        break
+        
+    return quantity #stock.get_stock_of_product_by_serial_id(request.vars.product_id, sid)

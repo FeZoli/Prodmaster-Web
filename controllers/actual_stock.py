@@ -98,6 +98,10 @@ def get_actual_stock_of_product():
 
 
 @auth.requires_login()
+def get_stock_of_product_by_serial_id(product_id, serial_id):
+    return None # to be implemented
+
+@auth.requires_login()
 def insert_stock_change(old_record):
            id = db.stock.insert(product_id=old_record.product_id,
                                 product_name=old_record.product_name,

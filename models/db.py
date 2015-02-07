@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from gluon import current
+
 #########################################################################
 ## This scaffolding model makes your app work on Google App Engine too
 ## File is released under public domain and you can use without limitations
@@ -12,7 +14,10 @@ request.requires_https()
 #if not request.env.web2py_runtime_gae:
     ## if NOT running on Google App Engine use SQLite or other DB
 db = DAL('mysql://minux:nemerdekel@localhost/foodmaster', migrate=True)
-    # db = DAL('sqlite:///home/fekete/backup/FoodMaster/FoodMaster.db', migrate=True)
+
+current.db = db ## to be available from modules
+
+# db = DAL('sqlite:///home/fekete/backup/FoodMaster/FoodMaster.db', migrate=True)
 #else:
     ## connect to Google BigTable (optional 'google:datastore://namespace')
 #    db = DAL('google:datastore+ndb')
@@ -151,6 +156,7 @@ db.define_table('waybill_item',
                 Field('unit', db.unit),
                 Field('quantity', 'double', notnull=True),
                 Field('unit_price_recorded', 'double', notnull=True),
+                Field('serial_id', 'string', length=32),
                 Field('value_recorded', 'double', writable=False, notnull=True,
                       compute=lambda r: r.quantity*r.unit_price_recorded),
                 Field('remark', 'text')

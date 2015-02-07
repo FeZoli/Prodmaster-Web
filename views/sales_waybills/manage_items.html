@@ -6,7 +6,7 @@
 {{pass}}
 
 {{if product_rows:}}
-<form method="POST">
+<form method="POST" action="/{{=(request.application + '/' + request.controller)}}/add_item">
      <input type="submit" />
 <table>
     <tr><td>{{=T('Product Name')}}:</td>
@@ -44,7 +44,7 @@ $( document ).ready(function() {
                 row += '<tr><td>'
                        + $(this).find('serial_id').text() + '</td><td>'
                        + $(this).find('quantity').text() + '</td>'
-                       + '<td><input name="' + $(this).find('serial_id').text() + '"/></td></tr>';
+                + '<td><input name="sid:' + $(this).find('serial_id').text() + '"/></td></tr>';
              });
             $('#table_of_serial_numbers').html(row);
         });
