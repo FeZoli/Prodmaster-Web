@@ -21,7 +21,12 @@
         <td>{{=T('Unit')}}:</td>
         <td id="unit_text"></td>
     </tr>
+    <tr>
+        <td>{{=T('Unit Price Recorded')}}:</td>
+        <td><input type="text" name="unit_price_recorded" /></td>
+    </tr>
 </table>
+
 
 <table id="table_of_serial_numbers">
 </table>

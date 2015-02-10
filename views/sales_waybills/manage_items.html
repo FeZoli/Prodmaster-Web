@@ -21,9 +21,12 @@
         <td>{{=T('Unit')}}:</td>
         <td id="unit_text"></td>
     </tr>
+    <tr>
+        <td>{{=T('Unit Price Recorded')}}:</td>
+        <td><input type="text" name="unit_price_recorded" /></td>
+    </tr>
 </table>
 
-    <input type="text" name="unit_price_recorded" />
 
 <table id="table_of_serial_numbers">
 </table>
@@ -41,7 +44,6 @@ $( document ).ready(function() {
 
         var url2 = '/' + '{{=request.application}}' + '/actual_stock/get_actual_stock_of_product.xml/?product_id=' + prod_id;
         $.get(url2, function(result) {
-             /* $('#table_of_serial_numbers').empty(''); */
              var row = '';
              $(result).find("item").each(function() {
                 row += '<tr><td>'

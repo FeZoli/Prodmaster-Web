@@ -6,7 +6,7 @@ from gluon.tools import Crud
 @auth.requires_login()
 def index():
     grid = SQLFORM.smartgrid(db.waybill,
-                             constraints=dict(waybill=(db.waybill.is_delivery==True)),
+                             constraints=dict(waybill=(db.waybill.is_delivery==False)), # this is a purchase
                              linked_tables=['waybill_item'],
                              onvalidation=validate_item,
                              orderby=dict(waybill='~id', waybill_item='id'),
@@ -20,6 +20,8 @@ def validate_item(form):
         right_unit = db.product(form.vars.product).unit
         if form.vars.unit != str(right_unit.id):
             form.errors.unit = T('unit can be only \'%s\' for this product') % right_unit.name
+
+    form.vars.is_delivery = False # it's a purchase
 
 def get_intake_link(args):
     if hasattr(args, 'waybill'): return '' # hide on child

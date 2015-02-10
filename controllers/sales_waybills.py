@@ -8,16 +8,16 @@ import stock
 
 @auth.requires_login()
 def index():
-    query = db.waybill.is_delivery==False
+    query = db.waybill.is_delivery==True
     links = [dict(header='', body=get_intake_link),
              dict(header='', body=get_items_link)]
     grid = SQLFORM.grid(query,
                          onvalidation=validate_item,
                          orderby='~id',
                          links=links,
-                         links_in_grid=True,
-                         oncreate=myoncreate,
-                         onupdate=myoncreate)
+                         links_in_grid=True)
+                         #oncreate=myoncreate)
+                         #onupdate=myoncreate)
     
     return dict(waybill_list=grid)
 
@@ -28,6 +28,10 @@ def validate_item(form):
         right_unit = db.product(form.vars.product).unit
         if form.vars.unit != str(right_unit.id):
             form.errors.unit = T('unit can be only \'%s\' for this product') % right_unit.name
+
+    form.vars.is_delivery = True
+    form.vars.remark = 'Zoli from the prog.'
+
 
 @auth.requires_login()
 def pick():
@@ -69,7 +73,9 @@ def get_items_link(args):
     return A(T('Items'), _href=url)
 
 def get_source_link(args):
-    url = URL('manufacturing_orders/show_source', vars=dict(product_id=args.product, serial_id=args.serial_id))
+    url = URL(c='manufacturing_orders',
+              f='show_source',
+              vars=dict(product_id=args.product, serial_id=args.serial_id))
     return A(T('Source'), _href=url)
 
 @auth.requires_login()
@@ -80,23 +86,37 @@ def get_unit():
 
 def myoncreate(form):
     redirect(URL('pick', vars=dict(product_id=form.vars.product)))
-    return None
+    pass
 
 @auth.requires_login()
 def manage_items():
-    if len(request.args) > 0 and request.args[0] == 'new': return new(args)
+    if len(request.args) > 0 and request.args[0] == 'new': return new(request.vars.waybill)
     query = (db.waybill_item.waybill==request.vars.waybill)#&(db.waybill_item.product==db.product.id)&(db.product.can_be_sold==1)
     links = [dict(header='', body=get_source_link)]
     return dict(form=SQLFORM.grid(query, links=links), product_rows=None)
 
-@auth.requires_login()
+
 def new(args):
     dataset = db(db.product.can_be_sold==True)
     rows = dataset.select(db.product.id,
                           db.product.name,
                           orderby=db.product.name)
 
-    return dict(form=None, product_rows=rows)
+    options = []
+    
+    for product in rows:
+        o = OPTION(product.name, _value=product.id)
+        options.append(o)
+    
+    form = FORM(TABLE(TR(T('Product Name'),
+                SELECT(*options, _id='product_select', _name='product_id')),
+                TR(T('Valagam'),
+                INPUT(_id='valagam')),
+                TR(INPUT(_type='submit')))
+                )
+
+
+    return dict(form=form, product_rows=rows)
 
 
 @auth.requires_login()
