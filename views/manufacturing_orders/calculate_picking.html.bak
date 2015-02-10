@@ -4,10 +4,20 @@
 <h4>{{=str(mo.quantity) + ' ' + str(product.unit.name)}}</h4>
 
 <form id='manufactoring-order-form' method='POST' action='finish_manufacturing'>
-<div>
-    {{=T('Date of production')}}:&nbsp;{{=INPUT(_class='date', _name='date_of_production',
-                                                requires=[IS_NOT_EMPTY(), IS_DATE(format='%Y-%m-%d')])}}
-</div>
+<table>
+    <tr>
+        <td>{{=T('Date of production')}}</td>
+        <td>{{=INPUT(_class='date', _name='date_of_production',
+                     value=mo.planned_date,
+                     requires=[IS_NOT_EMPTY(), IS_DATE(format='%Y-%m-%d')])}}</td>
+    </tr>
+    <tr>
+        <td>{{=T('Best before date')}}</td>
+        <td>{{=INPUT(_class='date', _name='best_before_date',
+                     value=mo.best_before_date,
+                     requires=[IS_NOT_EMPTY(), IS_DATE(format='%Y-%m-%d')])}}</td>
+    </tr>
+</table>
 <table>
 {{for block in response._vars['o']:}}
     <tr>
@@ -36,8 +46,7 @@
 {{=INPUT(_name='product_name', _type='HIDDEN', _value=product.name)}}
 {{=INPUT(_name='product_unit', _type='HIDDEN', _value=product.unit)}}
 {{=INPUT(_name='product_quantity', _type='HIDDEN', _value=mo.quantity)}}
-{{if not is_out_of_stock:}}
-    {{=INPUT(_type='SUBMIT')}}
-{{pass}}
+<input type='SUBMIT', {{if is_out_of_stock: 'disabled'}}{{pass}} />
+
 </table>
 </form>

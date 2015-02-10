@@ -1,5 +1,6 @@
 {{extend 'layout.html'}}
 
+{{if request.vars.scrollitemid:}}
 <script>
 $( document ).ready(function() {
     var id = "#prod_" + {{=request.vars.scrollitemid}};
@@ -8,6 +9,7 @@ $( document ).ready(function() {
         }, 1000);
 });
 </script>
+{{pass}}
 
 
 <table class='web2py_grid'>
@@ -22,7 +24,9 @@ $( document ).ready(function() {
     <tr id="prod_{{=row['product_id']}}">
         <td>{{if row['id']:}}
             {{style='font-weight:normal'}}
-            <a href="update_item?id={{=row['id']}}">{{=row['id']}}</a>
+            {{request.vars['id'] = row['id']}}
+            {{url = URL('update_item', vars=request.vars)}}
+            <a href="{{=url}}">{{=row['id']}}</a>
             {{else:}}
                 {{style='font-weight:bold'}}
             {{pass}}

@@ -8,6 +8,7 @@
 {{if product_rows:}}
 <form method="POST" action="/{{=(request.application + '/' + request.controller)}}/add_item">
      <input type="submit" />
+     <input type="hidden" name="waybill_id" value="{{=request.vars.waybill}}" />
 <table>
     <tr><td>{{=T('Product Name')}}:</td>
         <td><select id="product_select" name="product_id" autofocus required>
@@ -44,7 +45,7 @@ $( document ).ready(function() {
                 row += '<tr><td>'
                        + $(this).find('serial_id').text() + '</td><td>'
                        + $(this).find('quantity').text() + '</td>'
-                       + '<td><input name="' + $(this).find('serial_id').text() + '"/></td></tr>';
+                + '<td><input name="sid:' + $(this).find('serial_id').text() + '"/></td></tr>';
              });
             $('#table_of_serial_numbers').html(row);
         });

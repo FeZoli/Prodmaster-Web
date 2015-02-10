@@ -8,6 +8,7 @@
 {{if product_rows:}}
 <form method="POST" action="/{{=(request.application + '/' + request.controller)}}/add_item">
      <input type="submit" />
+     <input type="hidden" name="waybill_id" value="{{=request.vars.waybill}}" />
 <table>
     <tr><td>{{=T('Product Name')}}:</td>
         <td><select id="product_select" name="product_id" autofocus required>
@@ -21,6 +22,8 @@
         <td id="unit_text"></td>
     </tr>
 </table>
+
+    <input type="text" name="unit_price_recorded" />
 
 <table id="table_of_serial_numbers">
 </table>

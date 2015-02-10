@@ -12,16 +12,20 @@ def index():
 def get_process_link(args):
     if not db(db.bom.product==db.manufacturing_order(args.id).product).select().first():
         return T("No BOM available!")
-    if db.manufacturing_order(args.id).status != 1 : return '' # intake only if recorded
+    if db.manufacturing_order(args.id).status != 1 :
+        url = '/' + request.application + '/stock/get_mo?mid=' + str(args.id)
+        return A(T('Sources'), _href=url)
 
     url = '/' + request.application + '/manufacturing_orders/calculate_picking?id=' + str(args.id)
     return A(T('Manufacture !'), _href=url)
+
 
 @auth.requires_login()
 def calculate_picking():
 
     mo = db.manufacturing_order(request.vars.id)
     product = db.product(mo.product)
+    mo.best_before_date = mo.planned_date + timedelta(product.best_before_days)
     bom = db(db.bom.product==product.id).select().first()
     bom_items = db(db.bom_item.bom==bom.id).select()
     o = dict()
@@ -30,7 +34,9 @@ def calculate_picking():
         is_out_of_stock = False
         block = dict()
 
-        item_stock_list = db(db.stock.product_id==item.product.id).select(db.stock.id.max(),
+        stock_query = db.stock
+        stock_set = db(stock_query)
+        item_stock_list = stock_set(db.stock.product_id==item.product.id).select(db.stock.id.max(),
                                                                           db.stock.serial_id,
                                                                           groupby=db.stock.serial_id,
                                                                           orderby=db.stock.serial_id)
@@ -38,7 +44,7 @@ def calculate_picking():
         if len(item_stock_list) < 1:
             response.flash += "No stock of product: " + item.product.name + " "
             is_out_of_stock = True
-        
+
         item_stock_id = 0
         act_prod_id = 0
         actual_stock = 0
@@ -50,22 +56,28 @@ def calculate_picking():
 
         for item_stock in item_stock_list:
             item_stock_id = item_stock._extra['MAX(stock.id)']
-            product_set = db(db.product.id==db.stock.product_id)
-            act_product = product_set(db.stock.id==item_stock_id).select(db.stock.id,
-                                                                         db.product.id,
-                                                                         db.product.name,
-                                                                         db.stock.new_quantity,
-                                                                         db.stock.serial_id).first()
+            product_query = (db.stock.id==item_stock_id) & (db.stock.new_quantity > 0)
+            product_set = db(product_query)
+            act_product = product_set(db.product.id==db.stock.product_id).select(db.stock.id,
+                                                                                 db.product.id,
+                                                                                 db.product.name,
+                                                                                 db.stock.new_quantity,
+                                                                                 db.stock.serial_id).first()
 
             #block['last_sql'] = db._lastsql
+
+            if not act_product:
+                continue
 
             act_prod_id = item.product.id
             act_prod_name = ""
 
             ## show stock by serial_id
+            actual_item_stock = act_product.stock.new_quantity
+
             serial_info = dict()
             serial_info['serial_id'] = act_product.stock.serial_id
-            actual_item_stock = act_product.stock.new_quantity
+
             act_prod_name = act_product.product.name
 
             serial_info['actual_stock'] = actual_item_stock
@@ -116,6 +128,7 @@ def finish_manufacturing():
     
     mo_id = request.vars.mo_id
     date_of_production = request.vars.date_of_production
+    best_before_date = request.vars.best_before_date
     
     # insert raw material movement
     for picking_item in request.vars:
@@ -123,10 +136,12 @@ def finish_manufacturing():
             picking_data = picking_item.split('|')
             product_id = picking_data[2]
             serial_id = picking_data[1]
-            quantity = float(request.vars[picking_item])
+            quantity = 0.0
+            if request.vars[picking_item]:
+                quantity = float(request.vars[picking_item])
 
             if quantity > 0:
-                set = db(db.stock.product_id==product_id)
+                set = db((db.stock.product_id==product_id)&(db.stock.serial_id==serial_id))
                 row = set(db.stock.product_id==db.product.id).select(db.stock.new_quantity,
                                                                      db.product.name,
                                                                      db.product.unit,
@@ -200,6 +215,7 @@ def finish_manufacturing():
                         editable=False,
                         deletable=False,
                         searchable=False,
-                        csv=True)
+                        csv=True,
+                        maxtextlengths={'stock.product_name' : 50},)
 
     return dict(new_stock_items=grid)

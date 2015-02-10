@@ -2,6 +2,8 @@
 
 from gluon import current
 
+from datetime import timedelta
+
 #########################################################################
 ## This scaffolding model makes your app work on Google App Engine too
 ## File is released under public domain and you can use without limitations
@@ -122,6 +124,7 @@ db.define_table('product',
                 Field('can_be_sold', 'boolean', notnull=True),
                 Field('can_be_manufactured', 'boolean', notnull=True),
                 Field('unit_price', 'double', notnull=True),
+                Field('best_before_days', 'integer'),
                 Field('remark', 'text')
                 )
 
@@ -157,6 +160,7 @@ db.define_table('waybill_item',
                 Field('quantity', 'double', notnull=True),
                 Field('unit_price_recorded', 'double', notnull=True),
                 Field('serial_id', 'string', length=32),
+                Field('best_before_date', 'date'),
                 Field('value_recorded', 'double', writable=False, notnull=True,
                       compute=lambda r: r.quantity*r.unit_price_recorded),
                 Field('remark', 'text')
@@ -183,6 +187,7 @@ db.define_table('stock',
                 Field('target_partner_name', 'string', length=32),
                 Field('date_of_delivery', 'date', default=request.now),
                 Field('serial_id', 'string'),
+                Field('best_before_date', 'date'),
                 Field('unit_price_recorded', 'double', notnull=True),
                 Field('value_recorded', 'double', notnull=True),
                 Field('created', 'datetime', writable=False, default=request.now),

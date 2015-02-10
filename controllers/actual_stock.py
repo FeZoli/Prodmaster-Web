@@ -28,16 +28,22 @@ def update_item():
         form.vars.id = insert_stock_change(row)
         response.flash = T('Stock has changed successfully')
         session.flash = form.vars.id
-        redirect(URL('/index?scrollitemid='+str(row.product_id.id)))
+        new_vars = {'group' : request.vars.group,
+                    'scrollitemid' : str(row.product_id.id)}
+        redirect(URL('/index', vars=new_vars))
 
     return dict(form=form)
 
 
 @auth.requires_login()
 def get_actual_stock_of_product():
-    query = db.product
+    query = (db.product)
+
     if request.vars.product_id:
         query = db.product.id==request.vars.product_id
+
+    if request.vars.group:
+        query = (db.product.product_group==request.vars.group)
 
     relevant_stock_ids = []
 

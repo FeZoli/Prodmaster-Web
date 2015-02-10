@@ -44,7 +44,7 @@ def do_intake():
             last_quantity = row.new_quantity
 
         db.stock.insert(product_id=item.product,
-                        product_name=item.product_name,
+                        product_name=db.product(item.product).name,
                         unit=item.unit,
                         quantity_change=item.quantity,
                         new_quantity=last_quantity+item.quantity,

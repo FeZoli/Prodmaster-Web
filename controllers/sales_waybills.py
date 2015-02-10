@@ -61,13 +61,16 @@ def pick():
 def get_intake_link(args):
     if db.waybill(args.id).status != 1 : return '' # intake only if recorded
 
-    url = '/' + request.application + '/deliver/?waybill=' + str(args.id)
-    return A(T('Intake'), _href=url)
+    url = '/' + request.application + '/delivery/?waybill=' + str(args.id)
+    return A(T('Deliver'), _href=url)
 
 def get_items_link(args):
-    if db.waybill(args.id).status != 1 : return '' # intake only if recorded
     url = URL('manage_items', vars=dict(waybill=args.id))
     return A(T('Items'), _href=url)
+
+def get_source_link(args):
+    url = URL('manufacturing_orders/show_source', vars=dict(product_id=args.product, serial_id=args.serial_id))
+    return A(T('Source'), _href=url)
 
 @auth.requires_login()
 def get_unit():
@@ -82,8 +85,9 @@ def myoncreate(form):
 @auth.requires_login()
 def manage_items():
     if len(request.args) > 0 and request.args[0] == 'new': return new(request.vars.waybill)
-    query = (db.waybill_item.id==request.vars.waybill)#&(db.waybill_item.product==db.product.id)&(db.product.can_be_sold==1)
-    return dict(form=SQLFORM.grid(query), product_rows=None)
+    query = (db.waybill_item.waybill==request.vars.waybill)#&(db.waybill_item.product==db.product.id)&(db.product.can_be_sold==1)
+    links = [dict(header='', body=get_source_link)]
+    return dict(form=SQLFORM.grid(query, links=links), product_rows=None)
 
 @auth.requires_login()
 def new(waybill_id):
@@ -97,12 +101,26 @@ def new(waybill_id):
 
 @auth.requires_login()
 def add_item():
-    quantity = -10
+    product = db(db.product.id==request.vars.product_id).select(db.product.id,
+                                                                db.product.name,
+                                                                db.product.unit).first()
     for selling_item in request.vars:
         if selling_item.startswith('sid'):
             selling_data = selling_item.split(':')
             serial_id = selling_data[1]
-            quantity = float(request.vars[selling_item])
-        break
-        
-    return quantity #stock.get_stock_of_product_by_serial_id(request.vars.product_id, sid)
+            quantity = 0.0
+            if request.vars[selling_item]:
+                quantity = float(request.vars[selling_item])
+
+            if quantity > 0:
+                db.waybill_item.insert(waybill=request.vars.waybill_id,
+                                       product=product.id,
+                                       product_name=product.name,
+                                       unit=product.unit,
+                                       quantity=quantity,
+                                       unit_price_recorded=float(request.vars.unit_price_recorded),
+                                       serial_id=serial_id,
+                                       remark='')
+
+    redirect(URL('manage_items', vars=dict(waybill=request.vars.waybill_id)))
+    return None

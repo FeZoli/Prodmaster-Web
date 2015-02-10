@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-# try something like
 
 from gluon.tools import Crud
+
+import stock
 
 @auth.requires_login()
 def index():
@@ -21,41 +22,38 @@ def index():
                 waybill=request.vars.waybill)
 
 @auth.requires_login()
-def do_intake():
-
-    wid = request.vars.waybill
-
-    waybill = db.waybill(wid)
+def do_delivery():
+    waybill = db.waybill(request.vars.waybill)
     if waybill.status != 1:
         response.flash = T('Invalid operation')
-        redirect(URL(c='waybills', f='index'))
+        redirect(URL(c='sales_waybills', f='index'))
 
     partner = db.partner(waybill.partner)
-    waybill_items = db(db.waybill_item.waybill==wid).select()
+    waybill_items = db(db.waybill_item.waybill==waybill.id).select()
 
-    source_reference = 'WB/' + str(waybill.id)
+    source_reference = 'SWB/' + str(waybill.id)
+    last_quantity = 0.0
 
     for item in waybill_items:
-        # summation of the same serial number items
-        query = (db.stock.product_id==item.product)&(db.stock.serial_id==waybill.date_of_delivery)
-        row = db(query).select(db.stock.new_quantity, orderby=db.stock.id).last()
-        last_quantity = 0
-        if row:
-            last_quantity = row.new_quantity
+        last_quantity = stock.get_stock_of_product_by_serial_id(item.product, item.serial_id)
+
+        if last_quantity < item.quantity:
+            response.flash = T('Not enough stock of product: ') + item.product_name
+            redirect(URL(c='sales_waybills', f='index'))
 
         db.stock.insert(product_id=item.product,
-                        product_name=db(product==item.product).id,
+                        product_name=item.product_name,
                         unit=item.unit,
-                        quantity_change=item.quantity,
-                        new_quantity=last_quantity+item.quantity,
-                        source_partner_id=partner.id,
-                        source_partner_name=partner.name,
+                        quantity_change=0-item.quantity,
+                        new_quantity=last_quantity-item.quantity,
+                        source_partner_id=0,
+                        source_partner_name='Ostya 84',
                         source_doc_id=waybill.id,
                         source_reference=source_reference,
-                        target_partner_id=0,
-                        target_partner_name='Ostya 84',
+                        target_partner_id=partner.id,
+                        target_partner_name=partner.name,
                         date_of_delivery=waybill.date_of_delivery,
-                        serial_id=waybill.date_of_delivery,
+                        serial_id=item.serial_id,
                         created=request.now,
                         remark=''
                         )
