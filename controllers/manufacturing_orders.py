@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import local_settings
+
+
 @auth.requires_login()
 def index():
     grid = SQLFORM.grid(db.manufacturing_order,
                         links=[dict(header='', body=get_process_link)],
-                        maxtextlengths={'manufacturing_order.product' : 50},
+                        maxtextlengths={'manufacturing_order.product' : local_settings.product_name_max_length},
                         orderby='status, ~planned_date')
 
     return dict(manufacturing_order_list=grid)

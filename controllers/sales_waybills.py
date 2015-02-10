@@ -84,13 +84,13 @@ def myoncreate(form):
 
 @auth.requires_login()
 def manage_items():
-    if len(request.args) > 0 and request.args[0] == 'new': return new(request.vars.waybill)
+    if len(request.args) > 0 and request.args[0] == 'new': return new(args)
     query = (db.waybill_item.waybill==request.vars.waybill)#&(db.waybill_item.product==db.product.id)&(db.product.can_be_sold==1)
     links = [dict(header='', body=get_source_link)]
     return dict(form=SQLFORM.grid(query, links=links), product_rows=None)
 
 @auth.requires_login()
-def new(waybill_id):
+def new(args):
     dataset = db(db.product.can_be_sold==True)
     rows = dataset.select(db.product.id,
                           db.product.name,

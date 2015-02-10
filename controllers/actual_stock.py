@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 @auth.requires_login()
 def index():
     return get_actual_stock_of_product()
@@ -61,10 +60,10 @@ def get_actual_stock_of_product():
         for stock_row in stock_rows:
             relevant_stock_ids.append(stock_row._extra[maxing])
 
-    s = db(db.stock)
+    s = db(db.stock.product_id==db.product.id)
     q = (db.stock.id.belongs(relevant_stock_ids))&(db.stock.new_quantity>0)
     stock_rows = s(q).select(db.stock.id,
-                             db.stock.product_name,
+                             db.product.name,
                              db.stock.product_id,
                              db.stock.serial_id,
                              db.stock.new_quantity,
@@ -76,14 +75,14 @@ def get_actual_stock_of_product():
     prod_total_quantity = 0
     for stock_row in stock_rows:
         tablerow = dict()
-        tablerow['id'] = stock_row.id
-        tablerow['product_name'] = stock_row.product_name
-        tablerow['product_id'] = stock_row.product_id
-        tablerow['quantity'] = stock_row.new_quantity
-        tablerow['serial_id'] = stock_row.serial_id
+        tablerow['id'] = stock_row.stock.id
+        tablerow['product_name'] = stock_row.product.name
+        tablerow['product_id'] = stock_row.stock.product_id
+        tablerow['quantity'] = stock_row.stock.new_quantity
+        tablerow['serial_id'] = stock_row.stock.serial_id
 
-        if prev_prod_id == stock_row.product_id:
-            prod_total_quantity += stock_row.new_quantity
+        if prev_prod_id == stock_row.stock.product_id:
+            prod_total_quantity += stock_row.stock.new_quantity
         else:
             tablerow_sum = dict()
             tablerow_sum['id'] = ''
@@ -94,8 +93,8 @@ def get_actual_stock_of_product():
             if prev_prod_id > -1:
                 tabledata.append(tablerow_sum)
 
-            prod_total_quantity = stock_row.new_quantity
-            prev_prod_id = stock_row.product_id
+            prod_total_quantity = stock_row.stock.new_quantity
+            prev_prod_id = stock_row.stock.product_id
             prev_prod_name = tablerow['product_name']
 
         tabledata.append(tablerow)

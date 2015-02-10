@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
+import local_settings
+
 @auth.requires_login()
 def index():
     grid = SQLFORM.smartgrid(db.bom, linked_tables=['bom_item'],
                              onvalidation=validate_item,
                              orderby=dict(bom=['product'], bom_item=['~quantity']),
                              links_in_grid=True,
-                             maxtextlengths={'bom.product' : 50},)
+                             maxtextlengths={'bom.product' : local_settings.product_name_max_length},)
     return dict(bom_list=grid)
 
 def validate_item(form):

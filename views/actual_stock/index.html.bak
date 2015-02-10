@@ -1,5 +1,7 @@
 {{extend 'layout.html'}}
 
+{{import local_settings}}
+
 {{if request.vars.scrollitemid:}}
 <script>
 $( document ).ready(function() {
@@ -25,7 +27,7 @@ $( document ).ready(function() {
         <td>{{if row['id']:}}
             {{style='font-weight:normal'}}
             {{request.vars['id'] = row['id']}}
-            {{url = URL('update_item', vars=request.vars))}}
+            {{url = URL('update_item', vars=request.vars)}}
             <a href="{{=url}}">{{=row['id']}}</a>
             {{else:}}
                 {{style='font-weight:bold'}}
