@@ -107,9 +107,12 @@ def calculate_picking():
             block['name'] = act_prod_name
             block['requested_stock'] = round(requested_stock, 3)
             block['actual_stock'] = actual_stock
-            block['is_out_of_stock'] = actual_stock < requested_stock
+            block['is_out_of_stock'] = (i == len(item_stock_list)) and (actual_stock < requested_stock)
             block['missing_stock'] = round(actual_stock-requested_stock, 3)
             block['info'] = act_prods_info
+
+            if block['is_out_of_stock'] == True:
+                response.flash += "Out of stock of product: " + act_prod_name
 
             is_out_of_stock = is_out_of_stock or block['is_out_of_stock']
 
@@ -128,11 +131,11 @@ def calculate_picking():
 
 @auth.requires_login()
 def finish_manufacturing():
-    
+
     mo_id = request.vars.mo_id
     date_of_production = request.vars.date_of_production
     best_before_date = request.vars.best_before_date
-    
+
     # insert raw material movement
     for picking_item in request.vars:
         if picking_item.startswith('reserved-stock'):
@@ -172,9 +175,11 @@ def finish_manufacturing():
                                 )
 
     ### insert the newly manufactured product
-    row = db(db.stock.product_id==request.vars.product_id).select(db.stock.new_quantity,
-                                                                  orderby=~db.stock.id,
-                                                                  limitby=(0,1)).first()
+    q = (db.stock.product_id==request.vars.product_id) & (db.stock.serial_id==date_of_production)
+    row = db(q).select(db.stock.new_quantity,
+                       orderby=~db.stock.id,
+                       limitby=(0,1)).first()
+
     product_last_quantity = 0
     if row:
         product_last_quantity = row.new_quantity
@@ -194,7 +199,7 @@ def finish_manufacturing():
                     created=request.now,
                     remark=''
                     )
-    
+
     ### set the status
     db(db.manufacturing_order.id==mo_id).update(status=2) #processed
 

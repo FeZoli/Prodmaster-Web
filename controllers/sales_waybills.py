@@ -30,7 +30,6 @@ def validate_item(form):
             form.errors.unit = T('unit can be only \'%s\' for this product') % right_unit.name
 
     form.vars.is_delivery = True
-    form.vars.remark = 'Zoli from the prog.'
 
 
 @auth.requires_login()
@@ -116,7 +115,7 @@ def new(args):
                 )
 
 
-    return dict(form=form, product_rows=rows)
+    return dict(form=None, product_rows=rows)
 
 
 @auth.requires_login()
