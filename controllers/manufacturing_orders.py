@@ -29,7 +29,7 @@ def calculate_picking():
     mo = db.manufacturing_order(request.vars.id)
     product = db.product(mo.product)
     mo.best_before_date = mo.planned_date + timedelta(product.best_before_days)
-    bom = db(db.bom.product==product.id).select().first()
+    bom = db.bom(mo.bom)
     bom_items = db(db.bom_item.bom==bom.id).select()
     is_out_of_stock = False
     o = dict()

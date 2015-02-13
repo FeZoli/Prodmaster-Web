@@ -4,6 +4,7 @@ from gluon.tools import Crud
 from copy import deepcopy
 
 import stock
+import local_settings
 
 
 @auth.requires_login()
@@ -92,7 +93,12 @@ def manage_items():
     if len(request.args) > 0 and request.args[0] == 'new': return new(request.vars.waybill)
     query = (db.waybill_item.waybill==request.vars.waybill)#&(db.waybill_item.product==db.product.id)&(db.product.can_be_sold==1)
     links = [dict(header='', body=get_source_link)]
-    return dict(form=SQLFORM.grid(query, links=links), product_rows=None)
+    fields = [db.waybill_item.id, db.waybill_item.product, db.waybill_item.quantity, db.waybill_item.unit,
+              db.waybill_item.serial_id, db.waybill_item.best_before_date]
+    maxtextlengths = {'waybill_item.product': local_settings.product_name_max_length,
+                      'unit' : local_settings.unit_max_length}
+    grid = SQLFORM.grid(query, fields=fields, maxtextlengths=maxtextlengths, links=links, deletable=False)
+    return dict(form=grid, product_rows=None)
 
 
 def new(args):
@@ -127,6 +133,8 @@ def add_item():
         if selling_item.startswith('sid'):
             selling_data = selling_item.split(':')
             serial_id = selling_data[1]
+            best_before_date = stock.get_stock_id_of_product_by_serial_id(request.vars.product_id,
+                                                                          serial_id)
             quantity = 0.0
             if request.vars[selling_item]:
                 quantity = float(request.vars[selling_item])
@@ -139,6 +147,7 @@ def add_item():
                                        quantity=quantity,
                                        unit_price_recorded=float(request.vars.unit_price_recorded),
                                        serial_id=serial_id,
+                                       best_before_date=best_before_date,
                                        remark='')
 
     redirect(URL('manage_items', vars=dict(waybill=request.vars.waybill_id)))

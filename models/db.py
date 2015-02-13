@@ -175,7 +175,7 @@ db.waybill_item.quantity.requires = IS_EXPR('value>0')
 
 db.define_table('stock',
                 Field('product_id', db.product),
-                Field('product_name', 'string', length=32, notnull=True),
+                Field('product_name', 'string', length=64, notnull=True),
                 Field('unit', db.unit),
                 Field('quantity_change', 'double', notnull=True),
                 Field('new_quantity', 'double', writable=False, notnull=True),
@@ -203,6 +203,7 @@ db.stock.unit.represent = lambda id,row: db.unit(id).name
 
 db.define_table('bom',
                 Field('product', db.product),
+                Field('name', 'string', length=64, default=T('default')),
                 Field('unit', db.unit),
                 Field('quantity_of_charge', 'double', notnull=True),
                 Field('created', 'datetime', writable=False, default=request.now),
@@ -230,6 +231,7 @@ db.bom_item.unit.represent = lambda id,row: db.unit(id).name
 
 db.define_table('manufacturing_order',
                 Field('product', db.product),
+                Field('bom', db.bom),
                 Field('unit', db.unit),
                 Field('planned_date', 'date', notnull=True, requires=IS_DATE(format=('%Y-%m-%d'))),
                 Field('quantity', 'double', notnull=True),
@@ -238,8 +240,10 @@ db.define_table('manufacturing_order',
                 )
 
 db.manufacturing_order.product.requires = IS_IN_DB(db(db.product.can_be_manufactured==True), db.product.id, '%(name)s')
+db.manufacturing_order.bom.requires = IS_IN_DB(db, db.bom.id, '%(name)s')
 db.manufacturing_order.unit.requires = IS_IN_DB(db, db.unit.id, '%(name)s')
 db.manufacturing_order.product.represent = lambda id,row: db.product(id).name
+db.manufacturing_order.bom.represent = lambda id,row: db.bom(id).name
 db.manufacturing_order.unit.represent = lambda id,row: db.unit(id).name
 db.manufacturing_order.status.requires = IS_IN_DB(db, db.waybill_status.id, '%(name)s')
 db.manufacturing_order.status.represent = lambda id,row: db.waybill_status(id).name

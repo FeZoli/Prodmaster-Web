@@ -16,3 +16,13 @@ def validate_item(form):
         right_unit = db.product(form.vars.product).unit
         if form.vars.unit != str(right_unit.id):
             form.errors.unit = T('unit can be only \'%s\' for this product') % right_unit.name
+
+
+@auth.requires_login()
+def get_available_boms():
+    boms = []
+    
+    for bom in db(db.bom.product==request.vars.product_id).select():
+        boms.append({'id':bom.id, 'name':bom.name})
+
+    return dict(data=boms)
