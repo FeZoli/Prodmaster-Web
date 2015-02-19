@@ -2,19 +2,33 @@
 
 {{=manufacturing_order_list}}
 
-{{if request.args and 'new' in request.args:}}
+{{if request.args and ('new' in request.args or 'edit' in request.args) :}}
 <script>
 $( document ).ready(function() {
     var prod_id = $("#manufacturing_order_product").val();
     adjust_boms(prod_id);
 
     $( "#manufacturing_order_product" ).change(function() {
+        $('#manufacturing_order_product').prop('disabled', true);
+        $('#manufacturing_order_unit').prop('disabled', true);
+        $('#manufacturing_order_bom').prop('disabled', true);
+        $('#manufacturing_order_planned_date').prop('disabled', true);
+        $('#manufacturing_order_quantity').prop('disabled', true);
+        $('#manufacturing_order_remark').prop('disabled', true);
+
         prod_id = $("#manufacturing_order_product").val();
         var url = '/' + '{{=request.application}}' + '/products/get_unit/?product_id=' + prod_id;
         $.get(url, function(result) {
             $('#manufacturing_order_unit').val(result);
+            adjust_boms(prod_id);
+
+            $('#manufacturing_order_product').prop('disabled', false);
+            $('#manufacturing_order_unit').prop('disabled', false);
+            $('#manufacturing_order_bom').prop('disabled', false);
+            $('#manufacturing_order_planned_date').prop('disabled', false);
+            $('#manufacturing_order_quantity').prop('disabled', false);
+            $('#manufacturing_order_remark').prop('disabled', false);
         });
-        adjust_boms(prod_id);
     });
 });
 
@@ -33,6 +47,15 @@ function adjust_boms(prod_id) {
         });
         options.html(new_options);
     });
+}
+
+function disable_elements(disable) {
+    $('#manufacturing_order_product').prop('disabled', false);
+    $('#manufacturing_order_unit').prop('disabled', false);
+    $('#manufacturing_order_bom').prop('disabled', false);
+    $('#manufacturing_order_planned_date').prop('disabled', false);
+    $('#manufacturing_order_quantity').prop('disabled', false);
+    $('#manufacturing_order_remark').prop('disabled', false);
 }
 </script>
 {{pass}}

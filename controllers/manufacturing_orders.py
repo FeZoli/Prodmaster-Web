@@ -175,7 +175,7 @@ def finish_manufacturing():
                                 )
 
     ### insert the newly manufactured product
-    q = (db.stock.product_id==request.vars.product_id) & (db.stock.serial_id==date_of_production)
+    q = (db.stock.product_id==request.vars.product_id) & (db.stock.serial_id==request.vars.serial_id)
     row = db(q).select(db.stock.new_quantity,
                        orderby=~db.stock.id,
                        limitby=(0,1)).first()
@@ -195,7 +195,7 @@ def finish_manufacturing():
                     target_partner_id=0,
                     target_partner_name='Ostya 84',
                     date_of_delivery=date_of_production,
-                    serial_id=date_of_production,
+                    serial_id=request.vars.serial_id,
                     created=request.now,
                     remark=''
                     )

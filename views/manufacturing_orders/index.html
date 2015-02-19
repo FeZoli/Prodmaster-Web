@@ -9,10 +9,12 @@ $( document ).ready(function() {
     adjust_boms(prod_id);
 
     $( "#manufacturing_order_product" ).change(function() {
+        set_elements(true);
         prod_id = $("#manufacturing_order_product").val();
         var url = '/' + '{{=request.application}}' + '/products/get_unit/?product_id=' + prod_id;
         $.get(url, function(result) {
             $('#manufacturing_order_unit').val(result);
+            set_elements(false);
         });
         adjust_boms(prod_id);
     });
@@ -23,6 +25,7 @@ function adjust_boms(prod_id) {
     var options =  $("#manufacturing_order_bom")
 
     $.get(url2, function(result) {
+        set_elements(true);
         var new_options = ''
         items = $(result).find("item");
         if (items.length < 1) {new_options = "<option value=''>{{=T('N/A')}}</option>"}
@@ -32,7 +35,17 @@ function adjust_boms(prod_id) {
             new_options += '<option value=' + id + '>' + name + '</option>';
         });
         options.html(new_options);
+        set_elements(false);
     });
+}
+
+function set_elements(disabled) {
+    $('#manufacturing_order_product').prop('disabled', disabled);
+    $('#manufacturing_order_unit').prop('disabled', disabled);
+    $('#manufacturing_order_bom').prop('disabled', disabled);
+    $('#manufacturing_order_planned_date').prop('disabled', disabled);
+    $('#manufacturing_order_quantity').prop('disabled', disabled);
+    $('#manufacturing_order_remark').prop('disabled', disabled);
 }
 </script>
 {{pass}}

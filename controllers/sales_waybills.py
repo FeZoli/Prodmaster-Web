@@ -19,7 +19,7 @@ def index():
                          links_in_grid=True)
                          #oncreate=myoncreate)
                          #onupdate=myoncreate)
-    
+
     return dict(waybill_list=grid)
 
 def validate_item(form):
@@ -97,7 +97,7 @@ def manage_items():
               db.waybill_item.serial_id, db.waybill_item.best_before_date]
     maxtextlengths = {'waybill_item.product': local_settings.product_name_max_length,
                       'unit' : local_settings.unit_max_length}
-    grid = SQLFORM.grid(query, fields=fields, maxtextlengths=maxtextlengths, links=links, deletable=False)
+    grid = SQLFORM.grid(query, fields=fields, maxtextlengths=maxtextlengths, links=links)
     return dict(form=grid, product_rows=None)
 
 
@@ -105,23 +105,27 @@ def new(args):
     dataset = db(db.product.can_be_sold==True)
     rows = dataset.select(db.product.id,
                           db.product.name,
+                          db.product.unit_price,
                           orderby=db.product.name)
 
     options = []
-    
+    options.append(OPTION('', _value=''))
+
     for product in rows:
         o = OPTION(product.name, _value=product.id)
         options.append(o)
-    
-    form = FORM(TABLE(TR(T('Product Name'),
-                SELECT(*options, _id='product_select', _name='product_id')),
-                TR(T('Valagam'),
-                INPUT(_id='valagam')),
-                TR(INPUT(_type='submit')))
+
+    form = FORM(TABLE(
+                TR(INPUT(_type='submit')),
+                TR(INPUT(_type='hidden', _name='waybill_id', _value=request.vars.waybill)),
+                TR(T('Product Name'), SELECT(*options, _id='product_select', _name='product_id')),
+                TR(T('Unit'), TD(_id='unit_text')),
+                TR(T('Unit Price'), INPUT(_name='unit_price_recorded', _id='unit_price_recorded', _value=product.unit_price)),
+                _id='datatable'),
+                _action = URL('add_item')
                 )
 
-
-    return dict(form=None, product_rows=rows)
+    return dict(form=form, product_rows=None)
 
 
 @auth.requires_login()

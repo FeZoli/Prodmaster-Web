@@ -173,6 +173,11 @@ db.waybill_item.product.represent = lambda id,row: db.product(id).name
 db.waybill_item.unit.represent = lambda id,row: db.unit(id).name
 db.waybill_item.quantity.requires = IS_EXPR('value>0')
 
+db.define_table('place',
+                Field('name', 'string', length=64, notnull=True),
+                Field('remark', 'text')
+                )
+
 db.define_table('stock',
                 Field('product_id', db.product),
                 Field('product_name', 'string', length=64, notnull=True),
@@ -185,6 +190,8 @@ db.define_table('stock',
                 Field('source_reference', 'string', length=16),
                 Field('target_partner_id', db.partner),
                 Field('target_partner_name', 'string', length=32),
+                Field('place_from', db.place),
+                Field('place_to', db.place),
                 Field('date_of_delivery', 'date', default=request.now),
                 Field('serial_id', 'string'),
                 Field('best_before_date', 'date'),
@@ -196,24 +203,34 @@ db.define_table('stock',
 
 db.stock.product_id.requires = IS_IN_DB(db, db.product.id, '%(name)s')
 db.stock.unit.requires = IS_IN_DB(db, db.unit.id, '%(name)s')
+db.stock.place_from.requires = IS_IN_DB(db, db.place.id, '%(name)s')
+db.stock.place_to.requires = IS_IN_DB(db, db.place.id, '%(name)s')
 db.stock.source_partner_id.requires = IS_IN_DB(db, db.partner.id, '%(name)s')
 db.stock.target_partner_id.requires = IS_IN_DB(db, db.partner.id, '%(name)s')
 db.stock.date_of_delivery.requires = IS_DATE(format=('%Y-%m-%d'))
 db.stock.unit.represent = lambda id,row: db.unit(id).name
+db.stock.place_from.represent = lambda id,row: db.place(id).name
+db.stock.place_to.represent = lambda id,row: db.place(id).name
 
 db.define_table('bom',
                 Field('product', db.product),
                 Field('name', 'string', length=64, default=T('default')),
                 Field('unit', db.unit),
                 Field('quantity_of_charge', 'double', notnull=True),
+                Field('place_from', db.place),
+                Field('place_to', db.place),
                 Field('created', 'datetime', writable=False, default=request.now),
                 Field('remark', 'text')
                 )
 
 db.bom.product.requires = IS_IN_DB(db(db.product.can_be_manufactured==True), db.product.id, '%(name)s')
 db.bom.unit.requires = IS_IN_DB(db, db.unit.id, '%(name)s')
+db.bom.place_from.requires = IS_IN_DB(db, db.place.id, '%(name)s')
+db.bom.place_to.requires = IS_IN_DB(db, db.place.id, '%(name)s')
 db.bom.product.represent = lambda id,row: db.product(id).name
 db.bom.unit.represent = lambda id,row: db.unit(id).name
+db.bom.place_from.represent = lambda id,row: db.place(id).name
+db.bom.place_to.represent = lambda id,row: db.place(id).name
 
 db.define_table('bom_item',
                 Field('bom', db.bom),
@@ -235,6 +252,8 @@ db.define_table('manufacturing_order',
                 Field('unit', db.unit),
                 Field('planned_date', 'date', notnull=True, requires=IS_DATE(format=('%Y-%m-%d'))),
                 Field('quantity', 'double', notnull=True),
+                Field('place_from', db.place),
+                Field('place_to', db.place),
                 Field('status', db.waybill_status, writable=False, default=1),
                 Field('remark', 'text')
                 )
@@ -242,11 +261,15 @@ db.define_table('manufacturing_order',
 db.manufacturing_order.product.requires = IS_IN_DB(db(db.product.can_be_manufactured==True), db.product.id, '%(name)s')
 db.manufacturing_order.bom.requires = IS_IN_DB(db, db.bom.id, '%(name)s')
 db.manufacturing_order.unit.requires = IS_IN_DB(db, db.unit.id, '%(name)s')
+db.manufacturing_order.place_from.requires = IS_IN_DB(db, db.place.id, '%(name)s')
+db.manufacturing_order.place_to.requires = IS_IN_DB(db, db.place.id, '%(name)s')
 db.manufacturing_order.product.represent = lambda id,row: db.product(id).name
 db.manufacturing_order.bom.represent = lambda id,row: db.bom(id).name
 db.manufacturing_order.unit.represent = lambda id,row: db.unit(id).name
 db.manufacturing_order.status.requires = IS_IN_DB(db, db.waybill_status.id, '%(name)s')
 db.manufacturing_order.status.represent = lambda id,row: db.waybill_status(id).name
+db.manufacturing_order.place_from.represent = lambda id,row: db.place(id).name
+db.manufacturing_order.place_to.represent = lambda id,row: db.place(id).name
 
 ## after defining tables, uncomment below to enable auditing
 # auth.enable_record_versioning(db)

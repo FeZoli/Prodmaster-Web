@@ -5,37 +5,13 @@
     {{=form}}
 {{pass}}
 
-{{if product_rows:}}
-<form method="POST" action="/{{=(request.application + '/' + request.controller)}}/add_item">
-     <input type="submit" />
-     <input type="hidden" name="waybill_id" value="{{=request.vars.waybill}}" />
-<table>
-    <tr><td>{{=T('Product Name')}}:</td>
-        <td><select id="product_select" name="product_id" autofocus required>
-                {{for p in product_rows:}}
-                    <option value={{=p.id}}>{{=p.name}}</option>
-                {{pass}}
-        </select></td>
-    </tr>
-    <tr>
-        <td>{{=T('Unit')}}:</td>
-        <td id="unit_text"></td>
-    </tr>
-    <tr>
-        <td>{{=T('Unit Price Recorded')}}:</td>
-        <td><input type="text" name="unit_price_recorded" /></td>
-    </tr>
-</table>
-
-
-<table id="table_of_serial_numbers">
-</table>
-</form>
-{{pass}}
-
 <script>
 $( document ).ready(function() {
     $( "#product_select" ).change(function() {
+        $('#product_select').prop('disabled', true);
+        $('#unit_text').prop('disabled', true);
+        $('#unit_price_recorded').prop('disabled', true);
+
         var prod_id = $("#product_select").val();
         var url = '/' + '{{=request.application}}' + '/products/get_unit_name/?product_id=' + prod_id;
         $.get(url, function(result) {
@@ -46,12 +22,16 @@ $( document ).ready(function() {
         $.get(url2, function(result) {
              var row = '';
              $(result).find("item").each(function() {
-                row += '<tr><td>'
-                       + $(this).find('serial_id').text() + '</td><td>'
+                row += '<tr class="sid_row"><td>'
+                       + $(this).find('serial_id').text() + '&nbsp;'
                        + $(this).find('quantity').text() + '</td>'
                 + '<td><input name="sid:' + $(this).find('serial_id').text() + '"/></td></tr>';
              });
-            $('#table_of_serial_numbers').html(row);
+            $('.sid_row').remove();
+            $('#datatable').after(row);
+            $('#product_select').prop('disabled', false);
+            $('#unit_text').prop('disabled', false);
+            $('#unit_price_recorded').prop('disabled', false);
         });
     });
 });

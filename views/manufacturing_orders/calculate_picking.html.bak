@@ -17,6 +17,12 @@
                      value=mo.best_before_date,
                      requires=[IS_NOT_EMPTY(), IS_DATE(format='%Y-%m-%d')])}}</td>
     </tr>
+    <tr>
+      <td>{{=T('Serial Id')}}</td>
+      <td>{{=INPUT(_name='serial_id',
+                   value=mo.best_before_date,
+                   requires=IS_NOT_EMPTY())}}</td>
+    </tr>
 </table>
 <table>
 {{for block in response._vars['o']:}}
@@ -46,7 +52,7 @@
 {{=INPUT(_name='product_name', _type='HIDDEN', _value=product.name)}}
 {{=INPUT(_name='product_unit', _type='HIDDEN', _value=product.unit)}}
 {{=INPUT(_name='product_quantity', _type='HIDDEN', _value=mo.quantity)}}
-<input type='SUBMIT', {{if is_out_of_stock: 'disabled'}}{{pass}} />
+<input type='SUBMIT', {{if is_out_of_stock:}}{{='disabled'}}{{pass}} />
 
 </table>
 </form>
