@@ -98,7 +98,7 @@ def manage_items():
     maxtextlengths = {'waybill_item.product': local_settings.product_name_max_length,
                       'unit' : local_settings.unit_max_length}
     grid = SQLFORM.grid(query, fields=fields, maxtextlengths=maxtextlengths, links=links)
-    return dict(form=grid, product_rows=None)
+    return dict(partner_id=db.waybill(request.vars.waybill).partner, form=grid, product_rows=None)
 
 
 def new(args):
@@ -125,7 +125,7 @@ def new(args):
                 _action = URL('add_item')
                 )
 
-    return dict(form=form, product_rows=None)
+    return dict(partner_id=db.waybill(request.vars.waybill).partner, form=form, product_rows=None)
 
 
 @auth.requires_login()

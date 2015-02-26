@@ -23,6 +23,9 @@ def get_available_boms():
     boms = []
     
     for bom in db(db.bom.product==request.vars.product_id).select():
-        boms.append({'id':bom.id, 'name':bom.name})
+        boms.append({'id':bom.id,
+                     'name':bom.name,
+                     'place_from': bom.place_from.id,
+                     'place_to': bom.place_to.id})
 
     return dict(data=boms)

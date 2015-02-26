@@ -127,12 +127,14 @@ def calculate_picking():
     return dict(o=o,
                  product=product,
                  mo=mo,
+                 bom=bom,
                  is_out_of_stock=is_out_of_stock)
 
 @auth.requires_login()
 def finish_manufacturing():
 
     mo_id = request.vars.mo_id
+    mo = db.manufacturing_order(mo_id)
     date_of_production = request.vars.date_of_production
     best_before_date = request.vars.best_before_date
 
@@ -149,25 +151,34 @@ def finish_manufacturing():
             if quantity > 0:
                 set = db((db.stock.product_id==product_id)&(db.stock.serial_id==serial_id))
                 row = set(db.stock.product_id==db.product.id).select(db.stock.new_quantity,
+                                                                     db.stock.place_to,
                                                                      db.product.name,
                                                                      db.product.unit,
                                                                      orderby=~db.stock.id,
                                                                      limitby=(0,1)).last()
                 last_quantity = 0
+                last_place_id = 6 # alapanyag raktar
                 if row:
                     last_quantity = row.stock.new_quantity
+                    last_place = row.stock.place_to
+
+                new_quantity = last_quantity-quantity
+                if new_quantity < 0.001:
+                    new_quantity = 0.0
 
                 db.stock.insert(product_id=product_id,
                                 product_name=row.product.name,
                                 unit=row.product.unit,
                                 quantity_change=0-quantity,
-                                new_quantity=last_quantity-quantity,
+                                new_quantity=new_quantity,
                                 source_partner_id=0,
                                 source_partner_name='Ostya 84',
                                 source_doc_id=mo_id,
                                 source_reference='MO/' + mo_id,
                                 target_partner_id=0,
                                 target_partner_name='Ostya 84',
+                                place_from=last_place,
+                                place_to=last_place,
                                 date_of_delivery=date_of_production,
                                 serial_id=serial_id,
                                 created=request.now,
@@ -194,6 +205,8 @@ def finish_manufacturing():
                     source_reference='MO/' + mo_id,
                     target_partner_id=0,
                     target_partner_name='Ostya 84',
+                    place_from=mo.place_from,
+                    place_to=mo.place_to,
                     date_of_delivery=date_of_production,
                     serial_id=request.vars.serial_id,
                     created=request.now,

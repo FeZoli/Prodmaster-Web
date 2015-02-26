@@ -54,6 +54,8 @@ def do_intake():
                         source_reference=source_reference,
                         target_partner_id=0,
                         target_partner_name='Ostya 84',
+                        place_from=10, # 'beszallito raktara'
+                        place_to=6, # 'alapanyag raktár'
                         date_of_delivery=waybill.date_of_delivery,
                         serial_id=waybill.date_of_delivery,
                         created=request.now,

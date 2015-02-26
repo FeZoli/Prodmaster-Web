@@ -15,9 +15,16 @@ $( document ).ready(function() {
         var prod_id = $("#product_select").val();
         var url = '/' + '{{=request.application}}' + '/products/get_unit_name/?product_id=' + prod_id;
         $.get(url, function(result) {
-            $('#unit_text').html(result);
+            $('#unit_text').text(result);
         });
 
+        var url3 = '/' + '{{=request.application}}'
+                    + '/products/get_last_or_recorded_price_of_product/?product_id=' + prod_id
+                    + '&partner_id=' + {{=partner_id}};
+        $.get(url3, function(result) {
+            $('#unit_price_recorded').val(result);
+        });
+        
         var url2 = '/' + '{{=request.application}}' + '/actual_stock/get_actual_stock_of_product.xml/?product_id=' + prod_id;
         $.get(url2, function(result) {
              var row = '';

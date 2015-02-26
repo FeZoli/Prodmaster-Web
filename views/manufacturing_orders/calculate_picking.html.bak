@@ -1,7 +1,7 @@
 {{extend 'layout.html'}}
 
 <h3>{{=product.name}}</h3>
-<h4>{{=str(mo.quantity) + ' ' + str(product.unit.name)}}</h4>
+<h4>{{=str(mo.quantity) + ' ' + str(product.unit.name)}},&nbsp;{{=bom.name}}</h4>
 
 <form id='manufactoring-order-form' method='POST' action='finish_manufacturing'>
 <table>
@@ -20,7 +20,7 @@
     <tr>
       <td>{{=T('Serial Id')}}</td>
       <td>{{=INPUT(_name='serial_id',
-                   value=mo.best_before_date,
+                   value=mo.planned_date,
                    requires=IS_NOT_EMPTY())}}</td>
     </tr>
 </table>
@@ -48,6 +48,7 @@
     </table></td></tr>
 {{pass}}
 {{=INPUT(_name='mo_id', _type='HIDDEN', _value=mo.id)}}
+{{=INPUT(_name='bom_id', _type='HIDDEN', _value=bom.id)}}
 {{=INPUT(_name='product_id', _type='HIDDEN', _value=product.id)}}
 {{=INPUT(_name='product_name', _type='HIDDEN', _value=product.name)}}
 {{=INPUT(_name='product_unit', _type='HIDDEN', _value=product.unit)}}

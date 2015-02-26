@@ -28,3 +28,16 @@ def get_stock_id_of_product_by_serial_id(product_id, serial_id):
         return row.id
 
     return 0
+
+
+def get_last_or_recorded_price_of_product(product_id, partner_id):
+    db = current.db
+    query = (db.stock.product_id==product_id) & (db.stock.target_partner_id==partner_id)
+    row = db(query).select(db.stock.id,
+                           db.stock.unit_price_recorded,
+                           orderby=~db.stock.id,
+                           limitby=(0,1)).first()
+    if row:
+        return row.unit_price_recorded
+
+    return db.product(product_id).unit_price

@@ -1,7 +1,7 @@
 {{extend 'layout.html'}}
 
 <h3>{{=product.name}}</h3>
-<h4>{{=str(mo.quantity) + ' ' + str(product.unit.name)}}</h4>
+<h4>{{=str(mo.quantity) + ' ' + str(product.unit.name)}},&nbsp;{{=bom.name}}</h4>
 
 <form id='manufactoring-order-form' method='POST' action='finish_manufacturing'>
 <table>

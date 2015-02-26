@@ -2,7 +2,7 @@
 
 from gluon import current
 
-from datetime import timedelta
+from datetime import timedelta,date
 
 #########################################################################
 ## This scaffolding model makes your app work on Google App Engine too
@@ -159,7 +159,7 @@ db.define_table('waybill_item',
                 Field('unit', db.unit),
                 Field('quantity', 'double', notnull=True),
                 Field('unit_price_recorded', 'double', notnull=True),
-                Field('serial_id', 'string', length=32),
+                Field('serial_id', 'string', length=32, default=date.today()),
                 Field('best_before_date', 'date'),
                 Field('value_recorded', 'double', writable=False, notnull=True,
                       compute=lambda r: r.quantity*r.unit_price_recorded),
@@ -209,8 +209,8 @@ db.stock.source_partner_id.requires = IS_IN_DB(db, db.partner.id, '%(name)s')
 db.stock.target_partner_id.requires = IS_IN_DB(db, db.partner.id, '%(name)s')
 db.stock.date_of_delivery.requires = IS_DATE(format=('%Y-%m-%d'))
 db.stock.unit.represent = lambda id,row: db.unit(id).name
-db.stock.place_from.represent = lambda id,row: db.place(id).name
-db.stock.place_to.represent = lambda id,row: db.place(id).name
+db.stock.place_from.represent = lambda id,row: db.place(id).name if db.place(id) else 'N/A'
+db.stock.place_to.represent = lambda id,row: db.place(id).name if db.place(id) else 'N/A'
 
 db.define_table('bom',
                 Field('product', db.product),

@@ -28,7 +28,13 @@ sales_menu = (T('Sales'), True,URL('sales','index'),
  [(T('Waybills'), True, URL('sales_waybills','index')),
   (T('Daily tour'), True, URL('daily_tour','index'))])
 
+reports_menu = (T('Reports'), True, URL('reports','index'),
+ [(T('Production'), True, URL('production_reports','index'),
+  [(T('Daily performance'), True, URL('production_daily_performance_report','index'))]),
+  (T('Sales'), True, URL('sales_reports','index'))])
+
 response.menu = [index_menu,
                  warehouse_menu,
                  manufacturing_menu,
-                 sales_menu]
+                 sales_menu,
+                 reports_menu]
