@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import local_settings
+import stock
 
 
 @auth.requires_login()
@@ -239,4 +240,6 @@ def finish_manufacturing():
                         csv=True,
                         maxtextlengths={'stock.product_name' : 50},)
 
-    return dict(new_stock_items=grid)
+    actual_stock = stock.get_actual_stock_of_product(product_id=request.vars.product_id)
+
+    return dict(actual_stock=actual_stock, new_stock_items=grid)

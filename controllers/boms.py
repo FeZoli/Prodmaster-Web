@@ -8,7 +8,7 @@ def index():
                              onvalidation=validate_item,
                              orderby=dict(bom=['product'], bom_item=['~quantity']),
                              links_in_grid=True,
-                             maxtextlengths={'bom.product' : local_settings.product_name_max_length},)
+                             maxtextlengths={'bom.product' : local_settings.product_name_max_length})
     return dict(bom_list=grid)
 
 def validate_item(form):

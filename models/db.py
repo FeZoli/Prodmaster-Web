@@ -56,7 +56,7 @@ service = Service()
 plugins = PluginManager()
 
 ## create all tables needed by auth if not custom tables
-auth.define_tables(username=False, signature=False)
+auth.define_tables(username=True, signature=True)
 
 ## configure email
 mail = auth.settings.mailer
@@ -65,8 +65,9 @@ mail.settings.sender = 'you@gmail.com'
 mail.settings.login = 'username:password'
 
 ## configure auth policy
-auth.settings.registration_requires_verification = False
-auth.settings.registration_requires_approval = False
+auth.settings.actions_disabled.append('register')
+auth.settings.registration_requires_verification = True
+auth.settings.registration_requires_approval = True
 auth.settings.reset_password_requires_verification = True
 
 ## if you need to use OpenID, Facebook, MySpace, Twitter, Linkedin, etc.
@@ -270,6 +271,35 @@ db.manufacturing_order.status.requires = IS_IN_DB(db, db.waybill_status.id, '%(n
 db.manufacturing_order.status.represent = lambda id,row: db.waybill_status(id).name
 db.manufacturing_order.place_from.represent = lambda id,row: db.place(id).name
 db.manufacturing_order.place_to.represent = lambda id,row: db.place(id).name
+
+#### defining views ####
+db.define_table('v_daily_performance_financial',
+                Field('product_id', db.product),
+                Field('date_of_production', 'date'),
+                Field('place_from', db.place),
+                Field('place_to', db.place),
+                Field('value_recorded', 'double'),
+                migrate=False
+                )
+
+db.v_daily_performance_financial.product_id.represent = lambda id,row: db.product(id).name
+db.v_daily_performance_financial.place_from.represent = lambda id,row: db.place(id).name
+db.v_daily_performance_financial.place_to.represent = lambda id,row: db.place(id).name
+
+db.define_table('v_daily_place_sum_performance_financial',
+                Field('date_of_production', 'date'),
+                Field('place_from', db.place),
+                Field('value_recorded_sum', 'double'),
+                migrate=False
+                )
+
+db.v_daily_place_sum_performance_financial.place_from.represent = lambda id,row: db.place(id).name
+
+db.define_table('v_daily_sum_performance_financial',
+                Field('date_of_production', 'date'),
+                Field('value_recorded_sum', 'double'),
+                migrate=False
+                )
 
 ## after defining tables, uncomment below to enable auditing
 # auth.enable_record_versioning(db)

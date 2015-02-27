@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 
-@auth.requires_login()
+import stock
+
+
+@auth.requires(auth.has_membership(role='general manager'))
 def index():
     return get_actual_stock_of_product()
 
 
-@auth.requires_login()
+@auth.requires(auth.has_membership(role='general manager'))
 def update_item():
     fields = []
     row = db(db.stock.id==request.vars.id).select(db.stock.product_name,
@@ -34,79 +37,37 @@ def update_item():
     return dict(form=form)
 
 
-@auth.requires_login()
+@auth.requires_membership('general manager')
 def get_actual_stock_of_product():
-    query = (db.product)
+    return stock.get_actual_stock_of_product(product_id=request.vars.product_id,
+                                              group_id=request.vars.group)
 
-    if request.vars.product_id:
-        query = db.product.id==request.vars.product_id
+@auth.requires(auth.has_membership(role='general manager') or
+               auth.has_membership(role='packaging registrator'))
+def get_actual_stock_of_finished_product():
+    response.view = 'actual_stock/index.html'
+    return stock.get_actual_stock_of_product(product_id=request.vars.product_id,
+                                              group_id=3)
 
-    if request.vars.group:
-        query = (db.product.product_group==request.vars.group)
+@auth.requires(auth.has_membership(role='general manager') or
+               auth.has_membership(role='packaging registrator'))
+def get_actual_stock_of_unfinished_product():
+    response.view = 'actual_stock/index.html'
+    return stock.get_actual_stock_of_product(product_id=request.vars.product_id,
+                                              group_id=2)
 
-    relevant_stock_ids = []
+@auth.requires(auth.has_membership(role='general manager') or
+               auth.has_membership(role='packaging registrator'))
+def get_actual_stock_of_packaging_material():
+    response.view = 'actual_stock/index.html'
+    return stock.get_actual_stock_of_product(product_id=request.vars.product_id,
+                                              group_id=5)
 
-    s = db(query)
-    product_rows = s.select(db.product.id)
-
-    for product in product_rows:
-        s = db(db.stock==db.product)
-        q = (db.stock.product_id==product.id) #&(db.stock.new_quantity>0)
-        maxing = db.stock.id.max()
-        stock_rows = s(q).select(maxing,
-                                 db.stock.new_quantity,
-                                 groupby=db.stock.serial_id)
-
-        for stock_row in stock_rows:
-            relevant_stock_ids.append(stock_row._extra[maxing])
-
-    s = db(db.stock.product_id==db.product.id)
-    q = (db.stock.id.belongs(relevant_stock_ids))&(db.stock.new_quantity>0)
-    stock_rows = s(q).select(db.stock.id,
-                             db.product.name,
-                             db.stock.product_id,
-                             db.stock.serial_id,
-                             db.stock.new_quantity,
-                             orderby=[db.stock.product_name,db.stock.serial_id])
-    
-    tabledata = []
-    prev_prod_id = -1
-    prev_prod_name = ''
-    prod_total_quantity = 0
-    for stock_row in stock_rows:
-        tablerow = dict()
-        tablerow['id'] = stock_row.stock.id
-        tablerow['product_name'] = stock_row.product.name
-        tablerow['product_id'] = stock_row.stock.product_id
-        tablerow['quantity'] = stock_row.stock.new_quantity
-        tablerow['serial_id'] = stock_row.stock.serial_id
-
-        if prev_prod_id == stock_row.stock.product_id:
-            prod_total_quantity += stock_row.stock.new_quantity
-        else:
-            tablerow_sum = dict()
-            tablerow_sum['id'] = ''
-            tablerow_sum['product_name'] = prev_prod_name
-            tablerow_sum['product_id'] = prev_prod_id
-            tablerow_sum['quantity'] = prod_total_quantity
-            tablerow_sum['serial_id'] = T('Total')
-            if prev_prod_id > -1:
-                tabledata.append(tablerow_sum)
-
-            prod_total_quantity = stock_row.stock.new_quantity
-            prev_prod_id = stock_row.stock.product_id
-            prev_prod_name = tablerow['product_name']
-
-        tabledata.append(tablerow)
-
-    return dict(data=tabledata)
-
-
-@auth.requires_login()
+@auth.requires(auth.has_membership(role='general manager'))
 def get_stock_of_product_by_serial_id(product_id, serial_id):
     return None # to be implemented
 
-@auth.requires_login()
+@auth.requires(auth.has_membership(role='general manager'))
 def insert_stock_change(old_record):
            id = db.stock.insert(product_id=old_record.product_id,
                                 product_name=old_record.product_name,
