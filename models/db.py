@@ -118,7 +118,7 @@ db.define_table('product_group',
 
 
 db.define_table('product',
-                Field('name', 'string', length=64, unique=True, notnull=True),
+                Field('name', 'string', length=128, unique=True, notnull=True),
                 Field('unit', db.unit),
                 Field('product_group', db.product_group),
                 Field('can_be_purchased', 'boolean', notnull=True),
@@ -126,7 +126,8 @@ db.define_table('product',
                 Field('can_be_manufactured', 'boolean', notnull=True),
                 Field('unit_price', 'double', notnull=True),
                 Field('best_before_days', 'integer'),
-                Field('remark', 'text')
+                Field('remark', 'text'),
+                migrate=False
                 )
 
 db.product.unit.requires = IS_IN_DB(db, db.unit.id, '%(name)s')
@@ -181,7 +182,7 @@ db.define_table('place',
 
 db.define_table('stock',
                 Field('product_id', db.product),
-                Field('product_name', 'string', length=64, notnull=True),
+                Field('product_name', 'string', length=128, notnull=True),
                 Field('unit', db.unit),
                 Field('quantity_change', 'double', notnull=True),
                 Field('new_quantity', 'double', writable=False, notnull=True),
@@ -215,7 +216,7 @@ db.stock.place_to.represent = lambda id,row: db.place(id).name if db.place(id) e
 
 db.define_table('bom',
                 Field('product', db.product),
-                Field('name', 'string', length=64, default=T('default')),
+                Field('name', 'string', length=128, default=T('default')),
                 Field('unit', db.unit),
                 Field('quantity_of_charge', 'double', notnull=True),
                 Field('place_from', db.place),

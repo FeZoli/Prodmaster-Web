@@ -1,6 +1,8 @@
 {{extend 'layout.html'}}
 
-{{import local_settings}}
+<h3>
+    {{=a}}&nbsp;{{=T('product')}}
+</h3>
 
 {{if request.vars.scrollitemid:}}
 <script>
@@ -12,7 +14,6 @@ $( document ).ready(function() {
 });
 </script>
 {{pass}}
-
 
 <table class='web2py_grid'>
     <tr>

@@ -48,7 +48,6 @@
     </table></td></tr>
 {{pass}}
 {{=INPUT(_name='mo_id', _type='HIDDEN', _value=mo.id)}}
-{{=INPUT(_name='bom_id', _type='HIDDEN', _value=bom.id)}}
 {{=INPUT(_name='product_id', _type='HIDDEN', _value=product.id)}}
 {{=INPUT(_name='product_name', _type='HIDDEN', _value=product.name)}}
 {{=INPUT(_name='product_unit', _type='HIDDEN', _value=product.unit)}}

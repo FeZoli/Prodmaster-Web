@@ -18,57 +18,48 @@ def get_actual_stock_of_product(product_id=None, group_id=None):
     relevant_stock_ids = []
 
     s = db(query)
-    product_rows = s.select(db.product.id)
+    product_rows = s.select(db.product.id, db.product.name, orderby=db.product.name)
+
+    tabledata = []
 
     for product in product_rows:
         s = db(db.stock==db.product)
-        q = (db.stock.product_id==product.id) #&(db.stock.new_quantity>0)
+        q = (db.stock.product_id==product.id)
         maxing = db.stock.id.max()
         stock_rows = s(q).select(maxing,
                                  db.stock.new_quantity,
                                  groupby=db.stock.serial_id)
 
         for stock_row in stock_rows:
-            relevant_stock_ids.append(stock_row._extra[maxing])
+            # relevant_stock_ids.append(stock_row._extra[maxing])
 
-    s = db(db.stock.product_id==db.product.id)
-    q = (db.stock.id.belongs(relevant_stock_ids))&(db.stock.new_quantity>0)
-    stock_rows = s(q).select(db.stock.id,
-                             db.product.name,
-                             db.stock.product_id,
-                             db.stock.serial_id,
-                             db.stock.new_quantity,
-                             orderby=[db.stock.product_name,db.stock.serial_id])
+            q = (db.stock.product_id==product.id)&(db.stock.id==stock_row._extra[maxing])
+            stock_rows = db(q).select(db.stock.id,
+                                      db.stock.product_id,
+                                      db.stock.serial_id,
+                                      db.stock.new_quantity,
+                                      orderby=[db.stock.product_name,db.stock.serial_id])
 
-    tabledata = []
-    prev_prod_id = -1
-    prev_prod_name = ''
-    prod_total_quantity = 0
-    for stock_row in stock_rows:
-        tablerow = dict()
-        tablerow['id'] = stock_row.stock.id
-        tablerow['product_name'] = stock_row.product.name
-        tablerow['product_id'] = stock_row.stock.product_id
-        tablerow['quantity'] = stock_row.stock.new_quantity
-        tablerow['serial_id'] = stock_row.stock.serial_id
-
-        if prev_prod_id == stock_row.stock.product_id:
-            prod_total_quantity += stock_row.stock.new_quantity
-        else:
+        ### prepare store for summary
             tablerow_sum = dict()
             tablerow_sum['id'] = ''
-            tablerow_sum['product_name'] = prev_prod_name
-            tablerow_sum['product_id'] = prev_prod_id
-            tablerow_sum['quantity'] = prod_total_quantity
+            tablerow_sum['product_name'] = product.name
+            tablerow_sum['product_id'] = product.id
+            tablerow_sum['quantity'] = 0.0
             tablerow_sum['serial_id'] = T('Total')
-            if prev_prod_id > -1:
-                tabledata.append(tablerow_sum)
 
-            prod_total_quantity = stock_row.stock.new_quantity
-            prev_prod_id = stock_row.stock.product_id
-            prev_prod_name = tablerow['product_name']
+            for stock_row in stock_rows:
+                if stock_row.new_quantity > 0:
+                    tablerow = dict()
+                    tablerow['id'] = stock_row.id
+                    tablerow['product_name'] = product.name
+                    tablerow['product_id'] = stock_row.product_id
+                    tablerow['quantity'] = stock_row.new_quantity
+                    tablerow['serial_id'] = stock_row.serial_id
+                    tabledata.append(tablerow)
+                    tablerow_sum['quantity'] += stock_row.new_quantity
 
-        tabledata.append(tablerow)
+        tabledata.append(tablerow_sum)
 
     return dict(data=tabledata)
 

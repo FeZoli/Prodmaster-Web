@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from dateutil.relativedelta import relativedelta
+
 import local_settings
 import stock
 
@@ -29,7 +31,10 @@ def calculate_picking():
 
     mo = db.manufacturing_order(request.vars.id)
     product = db.product(mo.product)
-    mo.best_before_date = mo.planned_date + timedelta(product.best_before_days)
+    if product.best_before_days > 45:
+        mo.best_before_date = mo.planned_date + relativedelta(months=int(round(product.best_before_days/30)))
+    else:
+        mo.best_before_date = mo.planned_date + timedelta(product.best_before_days)
     bom = db.bom(mo.bom)
     bom_items = db(db.bom_item.bom==bom.id).select()
     is_out_of_stock = False
@@ -242,4 +247,4 @@ def finish_manufacturing():
 
     actual_stock = stock.get_actual_stock_of_product(product_id=request.vars.product_id)
 
-    return dict(actual_stock=actual_stock, new_stock_items=grid)
+    return dict(actual_stock=actual_stock['data'], new_stock_items=grid)

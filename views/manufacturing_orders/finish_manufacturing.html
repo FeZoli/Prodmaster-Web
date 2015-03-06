@@ -1,16 +1,7 @@
 {{extend 'layout.html'}}
-
-{{if request.vars.scrollitemid:}}
-<script>
-$( document ).ready(function() {
-    var id = "#prod_" + {{=request.vars.scrollitemid}};
-        $('html, body').animate({
-            scrollTop: $(id).offset().top
-        }, 1000);
-});
-</script>
-{{pass}}
-
+<h3>
+    A gyártás utáni elérhető készlet(ek)
+</h3>
 <table class='web2py_grid'>
     <tr>
         <th>{{=T('#')}}</th>
@@ -19,13 +10,11 @@ $( document ).ready(function() {
         <th>{{=T('Serial ID')}}</th>
         <th>{{=T('Recorded quantity')}}</th>
     </tr>
-{{for row in data:}}
-    <tr id="prod_{{=row['product_id']}}">
+{{for row in actual_stock:}}
+    <tr>
         <td>{{if row['id']:}}
-            {{style='font-weight:normal'}}
-            {{request.vars['id'] = row['id']}}
-            {{url = URL('update_item', vars=request.vars)}}
-            <a href="{{=url}}">{{=row['id']}}</a>
+                {{style='font-weight:normal'}}
+                {{=row['id']}}
             {{else:}}
                 {{style='font-weight:bold'}}
             {{pass}}
@@ -37,5 +26,9 @@ $( document ).ready(function() {
     </tr>
     {{if not row['id']: }}<tr style='height:1ex;'></tr>{{pass}}
 {{pass}}
-
 </table>
+<br />
+<h3>
+    A gyártás készletmozgásai
+</h3>
+{{=new_stock_items}}

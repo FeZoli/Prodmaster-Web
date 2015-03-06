@@ -46,6 +46,7 @@ def get_actual_stock_of_product():
                auth.has_membership(role='packaging registrator'))
 def get_actual_stock_of_finished_product():
     response.view = 'actual_stock/index.html'
+    request.vars.group = 3
     return stock.get_actual_stock_of_product(product_id=request.vars.product_id,
                                               group_id=3)
 
@@ -53,6 +54,7 @@ def get_actual_stock_of_finished_product():
                auth.has_membership(role='packaging registrator'))
 def get_actual_stock_of_unfinished_product():
     response.view = 'actual_stock/index.html'
+    request.vars.group = 2
     return stock.get_actual_stock_of_product(product_id=request.vars.product_id,
                                               group_id=2)
 
@@ -60,6 +62,7 @@ def get_actual_stock_of_unfinished_product():
                auth.has_membership(role='packaging registrator'))
 def get_actual_stock_of_packaging_material():
     response.view = 'actual_stock/index.html'
+    request.vars.group = 5
     return stock.get_actual_stock_of_product(product_id=request.vars.product_id,
                                               group_id=5)
 
