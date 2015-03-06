@@ -30,6 +30,14 @@ def get_actual_stock_of_product(product_id=None, group_id=None):
                                  db.stock.new_quantity,
                                  groupby=db.stock.serial_id)
 
+        ### prepare store for summary
+        tablerow_sum = dict()
+        tablerow_sum['id'] = ''
+        tablerow_sum['product_name'] = product.name
+        tablerow_sum['product_id'] = product.id
+        tablerow_sum['quantity'] = 0.0
+        tablerow_sum['serial_id'] = T('Total')
+
         for stock_row in stock_rows:
             # relevant_stock_ids.append(stock_row._extra[maxing])
 
@@ -39,14 +47,6 @@ def get_actual_stock_of_product(product_id=None, group_id=None):
                                       db.stock.serial_id,
                                       db.stock.new_quantity,
                                       orderby=[db.stock.product_name,db.stock.serial_id])
-
-        ### prepare store for summary
-            tablerow_sum = dict()
-            tablerow_sum['id'] = ''
-            tablerow_sum['product_name'] = product.name
-            tablerow_sum['product_id'] = product.id
-            tablerow_sum['quantity'] = 0.0
-            tablerow_sum['serial_id'] = T('Total')
 
             for stock_row in stock_rows:
                 if stock_row.new_quantity > 0:

@@ -24,15 +24,20 @@ $( document ).ready(function() {
         $.get(url3, function(result) {
             $('#unit_price_recorded').val(result);
         });
-        
+
         var url2 = '/' + '{{=request.application}}' + '/actual_stock/get_actual_stock_of_product.xml/?product_id=' + prod_id;
         $.get(url2, function(result) {
              var row = '';
              $(result).find("item").each(function() {
                 row += '<tr class="sid_row"><td>'
-                       + $(this).find('serial_id').text() + '&nbsp;'
-                       + $(this).find('quantity').text() + '</td>'
-                + '<td><input name="sid:' + $(this).find('serial_id').text() + '"/></td></tr>';
+                       + $(this).find('serial_id').text() + '&nbsp;';
+                 if ($(this).find('serial_id').text() != 'Total') {
+                    row += $(this).find('quantity').text() + '</td>'
+                           +'<td><input name="sid:' + $(this).find('serial_id').text() + '"/></td></tr>';
+                 } else {
+                     row += '<td>' + $(this).find('quantity').text() + '</td></tr>';
+                 }
+
              });
             $('.sid_row').remove();
             $('#datatable').after(row);
