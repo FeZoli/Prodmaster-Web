@@ -9,7 +9,7 @@ def index():
                              constraints=dict(waybill=(db.waybill.is_delivery==False)), # this is a purchase
                              linked_tables=['waybill_item'],
                              onvalidation=validate_item,
-                             orderby=dict(waybill='~id', waybill_item='id'),
+                             orderby=dict(waybill='~date_of_delivery, ~id', waybill_item='id'),
                              links=[dict(header='', body=get_intake_link)],
                              links_in_grid=True)
 

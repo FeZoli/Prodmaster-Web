@@ -1,5 +1,6 @@
 {{extend 'layout.html'}}
 
+
 <h3>{{=product.name}}</h3>
 <h4>{{=str(mo.quantity) + ' ' + str(product.unit.name)}},&nbsp;{{=bom.name}}</h4>
 
@@ -20,7 +21,7 @@
     <tr>
       <td>{{=T('Serial Id')}}</td>
       <td>{{=INPUT(_name='serial_id',
-                   value=mo.planned_date,
+                   value=mo.best_before_date,
                    requires=IS_NOT_EMPTY())}}</td>
     </tr>
 </table>

@@ -39,18 +39,20 @@ def calculate_picking():
     bom_items = db(db.bom_item.bom==bom.id).select()
     is_out_of_stock = False
     o = dict()
+    stocks_data = []
 
     for item in bom_items:
         block = dict()
 
-        stock_query = db.stock
+        stock_query = (db.stock.product_id==item.product.id)
         stock_set = db(stock_query)
-        item_stock_list = stock_set(db.stock.product_id==item.product.id).select(db.stock.id.max(),
-                                                                          db.stock.serial_id,
-                                                                          groupby=db.stock.serial_id,
-                                                                          orderby=db.stock.serial_id)
+        item_stock_list = stock_set.select(db.stock.id.max(),
+                                           db.stock.serial_id,
+                                           groupby=db.stock.serial_id,
+                                           orderby=db.stock.serial_id)
+
         # check whether we have any record in stock for the item
-        if len(item_stock_list) < 1:
+        if item_stock_list == None or len(item_stock_list) < 1:
             response.flash += "No stock of product: " + item.product.name + " "
             is_out_of_stock = True
 
@@ -61,11 +63,13 @@ def calculate_picking():
         rest_from_order = 0
         requested_stock = mo.quantity * (item.quantity / bom.quantity_of_charge)
         rest_from_order = requested_stock
-        i = 0
+        i = 1
 
         for item_stock in item_stock_list:
             item_stock_id = item_stock._extra['MAX(stock.id)']
-            product_query = (db.stock.id==item_stock_id) & (db.stock.new_quantity > 0)
+            product_query = (db.stock.id==item_stock_id)
+            if len(item_stock_list) > 1:
+                product_query &= (db.stock.new_quantity > 0)
             product_set = db(product_query)
             act_product = product_set(db.product.id==db.stock.product_id).select(db.stock.id,
                                                                                  db.product.id,
@@ -76,6 +80,8 @@ def calculate_picking():
             #block['last_sql'] = db._lastsql
 
             if not act_product:
+                is_out_of_stock = True
+                i += 1
                 continue
 
             act_prod_id = item.product.id
@@ -102,7 +108,6 @@ def calculate_picking():
                 serial_info['reserved_stock'] = 0.000
 
             act_prods_info[i] = serial_info
-            i += 1
 
             actual_stock += actual_item_stock
 
@@ -113,12 +118,12 @@ def calculate_picking():
             block['name'] = act_prod_name
             block['requested_stock'] = round(requested_stock, 3)
             block['actual_stock'] = actual_stock
-            block['is_out_of_stock'] = (i == len(item_stock_list)) and (actual_stock < requested_stock)
+            block['is_out_of_stock'] = False
+            if i == len(item_stock_list):
+                block['is_out_of_stock'] = actual_stock < requested_stock
+            i += 1
             block['missing_stock'] = round(actual_stock-requested_stock, 3)
             block['info'] = act_prods_info
-
-            if block['is_out_of_stock'] == True:
-                response.flash += "Out of stock of product: " + act_prod_name
 
             is_out_of_stock = is_out_of_stock or block['is_out_of_stock']
 
@@ -129,6 +134,9 @@ def calculate_picking():
             #block['last_sql'] = db._lastsql
 
             o[act_prod_name] = block
+
+    if is_out_of_stock:
+           response.flash = T("One or more products are out of stock !")
 
     return dict(o=o,
                  product=product,
@@ -158,15 +166,18 @@ def finish_manufacturing():
                 set = db((db.stock.product_id==product_id)&(db.stock.serial_id==serial_id))
                 row = set(db.stock.product_id==db.product.id).select(db.stock.new_quantity,
                                                                      db.stock.place_to,
+                                                                     db.stock.best_before_date,
                                                                      db.product.name,
                                                                      db.product.unit,
                                                                      orderby=~db.stock.id,
                                                                      limitby=(0,1)).last()
                 last_quantity = 0
                 last_place_id = 6 # alapanyag raktar
+                last_best_before_date = None
                 if row:
                     last_quantity = row.stock.new_quantity
                     last_place = row.stock.place_to
+                    last_best_before_date = row.stock.best_before_date
 
                 new_quantity = last_quantity-quantity
                 if new_quantity < 0.001:
@@ -187,6 +198,7 @@ def finish_manufacturing():
                                 place_to=last_place,
                                 date_of_delivery=date_of_production,
                                 serial_id=serial_id,
+                                best_before_date=last_best_before_date,
                                 created=request.now,
                                 remark=''
                                 )
@@ -215,6 +227,7 @@ def finish_manufacturing():
                     place_to=mo.place_to,
                     date_of_delivery=date_of_production,
                     serial_id=request.vars.serial_id,
+                    best_before_date=request.vars.best_before_date,
                     created=request.now,
                     remark=''
                     )

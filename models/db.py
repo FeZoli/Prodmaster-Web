@@ -249,15 +249,15 @@ db.bom_item.product.represent = lambda id,row: db.product(id).name
 db.bom_item.unit.represent = lambda id,row: db.unit(id).name
 
 db.define_table('manufacturing_order',
-                Field('product', db.product),
-                Field('bom', db.bom),
-                Field('unit', db.unit),
-                Field('planned_date', 'date', notnull=True, requires=IS_DATE(format=('%Y-%m-%d'))),
-                Field('quantity', 'double', notnull=True),
-                Field('place_from', db.place),
-                Field('place_to', db.place),
-                Field('status', db.waybill_status, writable=False, default=1),
-                Field('remark', 'text')
+                Field('product', db.product, label=T('Product')),
+                Field('bom', db.bom, label=T('BOM')),
+                Field('unit', db.unit, label=T('Unit')),
+                Field('planned_date', 'date', notnull=True, requires=IS_DATE(format=('%Y-%m-%d')), label=T('Planned Date')),
+                Field('quantity', 'double', notnull=True, label=T('Quantity')),
+                Field('place_from', db.place, label=T('Place From')),
+                Field('place_to', db.place, label=T('Place To')),
+                Field('status', db.waybill_status, writable=False, default=1, label=T('Status')),
+                Field('remark', 'text', label=T('Remark'))
                 )
 
 db.manufacturing_order.product.requires = IS_IN_DB(db(db.product.can_be_manufactured==True), db.product.id, '%(name)s')

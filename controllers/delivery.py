@@ -38,8 +38,10 @@ def do_delivery():
         last_quantity = stock.get_stock_of_product_by_serial_id(item.product, item.serial_id)
 
         if last_quantity < item.quantity:
-            response.flash = T('Not enough stock of product: ') + item.product_name
-            redirect(URL(c='sales_waybills', f='index'))
+            session.flash = T('Not enough stock of product: ') + item.product_name
+            redirect(URL(c='sales_waybills', f='manage_items', vars=dict(waybill=request.vars.waybill)))
+            db.rollback()
+            return
 
         db.stock.insert(product_id=item.product,
                         product_name=item.product_name,

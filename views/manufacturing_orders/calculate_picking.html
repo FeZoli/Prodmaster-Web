@@ -1,5 +1,6 @@
 {{extend 'layout.html'}}
 
+
 <h3>{{=product.name}}</h3>
 <h4>{{=str(mo.quantity) + ' ' + str(product.unit.name)}},&nbsp;{{=bom.name}}</h4>
 
@@ -32,10 +33,10 @@
     {{if b['is_out_of_stock']: style='color:red;'}}
     <td><h4 style='{{=style}}'>{{=b['name']}}</h4></td>
     <td><table>
-        <tr><td>Actual stock total:</td><td>{{=b['actual_stock']}}</td></tr>
-        <tr><td>Requested stock by recipe:</td><td>{{=b['requested_stock']}}</td></tr>
+        <tr><td>{{=T("Actual stock total:")}}</td><td>{{=b['actual_stock']}}</td></tr>
+        <tr><td>{{=T("Requested stock by recipe:")}}</td><td>{{=b['requested_stock']}}</td></tr>
         {{if b['is_out_of_stock']:}}
-        <tr style='{{=style}}'><td>Missing stock:</td><td>{{=b['missing_stock']}}</td></tr>
+        <tr style='{{=style}}'><td>{{=T("Missing stock:")}}</td><td>{{=b['missing_stock']}}</td></tr>
         {{pass}}
     </table>
     <table>

@@ -137,8 +137,8 @@ def add_item():
         if selling_item.startswith('sid'):
             selling_data = selling_item.split(':')
             serial_id = selling_data[1]
-            best_before_date = stock.get_stock_id_of_product_by_serial_id(request.vars.product_id,
-                                                                          serial_id)
+            best_before_date = db.stock(stock.get_stock_id_of_product_by_serial_id(request.vars.product_id,
+                                                                          serial_id)).best_before_date
             quantity = 0.0
             if request.vars[selling_item]:
                 quantity = float(request.vars[selling_item])

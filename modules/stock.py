@@ -96,7 +96,7 @@ def get_last_or_recorded_price_of_product(product_id, partner_id):
                            db.stock.unit_price_recorded,
                            orderby=~db.stock.id,
                            limitby=(0,1)).first()
-    if row:
+    if row and row.unit_price_recorded > 0:
         return row.unit_price_recorded
 
     return db.product(product_id).unit_price
