@@ -3,6 +3,8 @@
 from gluon.tools import Crud
 
 import stock
+import local_settings
+
 
 @auth.requires_login()
 def index():
@@ -33,21 +35,24 @@ def do_delivery():
 
     source_reference = 'SWB/' + str(waybill.id)
     last_quantity = 0.0
+    
+    
 
     for item in waybill_items:
-        last_quantity = stock.get_stock_of_product_by_serial_id(item.product, item.serial_id)
+        last_quantity = stock.get_stock_of_product_by_serial_id(product_id=item.product, serial_id=item.serial_id)
 
         if last_quantity < item.quantity:
-            session.flash = T('Not enough stock of product: ') + item.product_name
+            #session.flash = T('Not enough stock of product: ') + item.product_name + ", " + item.serial_id + " Nr.:" + str(item.id)
+            db(db.waybill.id==waybill.id).update(status=1) #recorded
+            db(db.stock.source_reference == source_reference).delete()
             redirect(URL(c='sales_waybills', f='manage_items', vars=dict(waybill=request.vars.waybill)))
-            db.rollback()
             return
 
         db.stock.insert(product_id=item.product,
                         product_name=item.product_name,
                         unit=item.unit,
                         quantity_change=0-item.quantity,
-                        new_quantity=last_quantity-item.quantity,
+                         new_quantity=last_quantity-item.quantity,
                         source_partner_id=0,
                         source_partner_name='Ostya 84',
                         source_doc_id=waybill.id,
@@ -60,15 +65,13 @@ def do_delivery():
                         remark=''
                         )
 
-        db(db.waybill.id==waybill.id).update(status=2) #delivered
+    db(db.waybill.id==waybill.id).update(status=2) #delivered
 
-    f = [db.stock.product_id,
-         db.stock.product_name,
+    f = [db.stock.product_name,
          db.stock.unit,
          db.stock.quantity_change,
          db.stock.new_quantity,
          db.stock.source_partner_name,
-         db.stock.source_doc_id,
          db.stock.source_reference,
          db.stock.date_of_delivery,
          db.stock.serial_id,
@@ -81,6 +84,7 @@ def do_delivery():
                         editable=False,
                         deletable=False,
                         searchable=False,
-                        csv=True)
+                        csv=True,
+                        maxtextlengths={'stock.product_name' : local_settings.product_name_max_length})
 
     return dict(new_stock_items=grid)

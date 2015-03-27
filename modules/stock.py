@@ -71,6 +71,7 @@ def get_stock_of_product_by_serial_id(product_id, serial_id):
                            db.stock.serial_id,
                            orderby=~db.stock.id,
                            limitby=(0,1)).first()
+
     if row:
         return row.new_quantity
 

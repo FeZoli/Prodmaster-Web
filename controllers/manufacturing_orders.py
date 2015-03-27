@@ -53,7 +53,7 @@ def calculate_picking():
 
         # check whether we have any record in stock for the item
         if item_stock_list == None or len(item_stock_list) < 1:
-            response.flash += "No stock of product: " + item.product.name + " "
+            session.flash += "No stock of product: " + item.product.name + " "
             is_out_of_stock = True
 
         item_stock_id = 0
@@ -68,8 +68,8 @@ def calculate_picking():
         for item_stock in item_stock_list:
             item_stock_id = item_stock._extra['MAX(stock.id)']
             product_query = (db.stock.id==item_stock_id)
-            if len(item_stock_list) > 1:
-                product_query &= (db.stock.new_quantity > 0)
+            #if len(item_stock_list) > 1:
+            #    product_query &= (db.stock.new_quantity > 0)
             product_set = db(product_query)
             act_product = product_set(db.product.id==db.stock.product_id).select(db.stock.id,
                                                                                  db.product.id,
@@ -80,7 +80,6 @@ def calculate_picking():
             #block['last_sql'] = db._lastsql
 
             if not act_product:
-                is_out_of_stock = True
                 i += 1
                 continue
 
@@ -107,7 +106,8 @@ def calculate_picking():
             else:
                 serial_info['reserved_stock'] = 0.000
 
-            act_prods_info[i] = serial_info
+            if actual_item_stock > 0 or i >= len(item_stock_list):
+                act_prods_info[i] = serial_info
 
             actual_stock += actual_item_stock
 
@@ -119,7 +119,7 @@ def calculate_picking():
             block['requested_stock'] = round(requested_stock, 3)
             block['actual_stock'] = actual_stock
             block['is_out_of_stock'] = False
-            if i == len(item_stock_list):
+            if i >= len(item_stock_list):
                 block['is_out_of_stock'] = actual_stock < requested_stock
             i += 1
             block['missing_stock'] = round(actual_stock-requested_stock, 3)

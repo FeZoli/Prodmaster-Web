@@ -15,10 +15,12 @@ def update_item():
                                                   db.stock.product_id,
                                                   db.stock.unit,
                                                   db.stock.serial_id,
-                                                  db.stock.new_quantity
+                                                  db.stock.new_quantity,
+                                                  db.stock.best_before_date,
                                                   ).first()
     fields.append(Field('product_name', db.stock, default=row.product_name, writable=False))
     fields.append(Field('serial_id', db.stock, default=row.serial_id, writable=False))
+    fields.append(Field('best_before_date', 'date', notnull=False, default=row.best_before_date, writable=False))
     fields.append(Field('date_of_inventory', 'date', notnull=True))#, default=request.now))
     fields.append(Field('quantity_recorded', 'double', default=row.new_quantity, writable=False))
     fields.append(Field('quantity_real', 'double', notnull=True))
@@ -85,6 +87,7 @@ def insert_stock_change(old_record):
                                 target_partner_name='Ostya 84',
                                 date_of_delivery=request.vars.date_of_inventory,
                                 serial_id=old_record.serial_id,
+                                best_before_date=old_record.best_before_date,
                                 created=request.now,
                                 remark=request.vars.remark
                                 )
