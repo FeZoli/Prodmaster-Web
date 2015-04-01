@@ -35,14 +35,13 @@ def do_delivery():
 
     source_reference = 'SWB/' + str(waybill.id)
     last_quantity = 0.0
-    
-    
+
 
     for item in waybill_items:
         last_quantity = stock.get_stock_of_product_by_serial_id(product_id=item.product, serial_id=item.serial_id)
 
         if last_quantity < item.quantity:
-            #session.flash = T('Not enough stock of product: ') + item.product_name + ", " + item.serial_id + " Nr.:" + str(item.id)
+            session.flash = T('Not enough stock of product: ') + item.product_name + ", " + item.serial_id + " Nr.:" + str(item.id)
             db(db.waybill.id==waybill.id).update(status=1) #recorded
             db(db.stock.source_reference == source_reference).delete()
             redirect(URL(c='sales_waybills', f='manage_items', vars=dict(waybill=request.vars.waybill)))

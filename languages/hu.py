@@ -234,6 +234,7 @@
 "No BOM available'": 'Nincs elérhető recept',
 'No databases in this application': 'Nincs adatbázis ebben az alkalmazásban',
 'No records found': 'Nincs találat',
+'No stock of product:': 'No stock of product:',
 'Not authorized': 'Nem megfelelő jogosultság',
 'not authorized': 'nem megfelelő jogosultság',
 'Not enough stock of product: ': 'Nincs elég raktárkészlet: ',

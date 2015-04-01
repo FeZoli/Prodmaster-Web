@@ -40,22 +40,12 @@ def calculate_picking():
     is_out_of_stock = False
     o = dict()
     stocks_data = []
+    session.flash = ""
 
     for item in bom_items:
+        item_stock_list = stock.get_actual_stock_of_product(product_id=item.product.id)
+
         block = dict()
-
-        stock_query = (db.stock.product_id==item.product.id)
-        stock_set = db(stock_query)
-        item_stock_list = stock_set.select(db.stock.id.max(),
-                                           db.stock.serial_id,
-                                           groupby=db.stock.serial_id,
-                                           orderby=db.stock.serial_id)
-
-        # check whether we have any record in stock for the item
-        if item_stock_list == None or len(item_stock_list) < 1:
-            session.flash += "No stock of product: " + item.product.name + " "
-            is_out_of_stock = True
-
         item_stock_id = 0
         act_prod_id = 0
         actual_stock = 0
@@ -65,34 +55,19 @@ def calculate_picking():
         rest_from_order = requested_stock
         i = 1
 
-        for item_stock in item_stock_list:
-            item_stock_id = item_stock._extra['MAX(stock.id)']
-            product_query = (db.stock.id==item_stock_id)
-            #if len(item_stock_list) > 1:
-            #    product_query &= (db.stock.new_quantity > 0)
-            product_set = db(product_query)
-            act_product = product_set(db.product.id==db.stock.product_id).select(db.stock.id,
-                                                                                 db.product.id,
-                                                                                 db.product.name,
-                                                                                 db.stock.new_quantity,
-                                                                                 db.stock.serial_id).first()
+        for item_stock in item_stock_list['data']:
+            item_stock_id = item_stock['id']
 
-            #block['last_sql'] = db._lastsql
-
-            if not act_product:
-                i += 1
-                continue
-
-            act_prod_id = item.product.id
-            act_prod_name = ""
+            act_prod_id = item_stock['product_id']
+            act_prod_name = item_stock['product_name']
 
             ## show stock by serial_id
-            actual_item_stock = act_product.stock.new_quantity
+            if item_stock['id']:
+                actual_item_stock = item_stock['quantity']
+                actual_stock += actual_item_stock
 
             serial_info = dict()
-            serial_info['serial_id'] = act_product.stock.serial_id
-
-            act_prod_name = act_product.product.name
+            serial_info['serial_id'] = item_stock['serial_id']
 
             serial_info['actual_stock'] = actual_item_stock
 
@@ -106,10 +81,9 @@ def calculate_picking():
             else:
                 serial_info['reserved_stock'] = 0.000
 
-            if actual_item_stock > 0 or i >= len(item_stock_list):
+            if item_stock['id']: # this is the last row, aka. 'Total'
                 act_prods_info[i] = serial_info
-
-            actual_stock += actual_item_stock
+                i += 1
 
             if not act_prod_name:
                 act_prod_name = db.product(item.product.id).name
@@ -119,10 +93,9 @@ def calculate_picking():
             block['requested_stock'] = round(requested_stock, 3)
             block['actual_stock'] = actual_stock
             block['is_out_of_stock'] = False
-            if i >= len(item_stock_list):
-                block['is_out_of_stock'] = actual_stock < requested_stock
-            i += 1
-            block['missing_stock'] = round(actual_stock-requested_stock, 3)
+            if not item_stock['id']:
+                block['is_out_of_stock'] = actual_item_stock < requested_stock
+                block['missing_stock'] = round(actual_item_stock-requested_stock, 3)
             block['info'] = act_prods_info
 
             is_out_of_stock = is_out_of_stock or block['is_out_of_stock']
