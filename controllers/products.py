@@ -7,9 +7,9 @@ import stock
 
 @auth.requires_login()
 def index():
-    
+
     l = SQLFORM.grid(db.product, orderby='name', maxtextlengths={'product.name' : 50},)
-    
+
     return dict(product_list=l)
 
 

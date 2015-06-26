@@ -90,14 +90,42 @@ def get_stock_id_of_product_by_serial_id(product_id, serial_id):
     return 0
 
 
-def get_last_or_recorded_price_of_product(product_id, partner_id):
+def get_last_or_recorded_price_of_product(product_id, partner_id=None):
     db = current.db
-    query = (db.stock.product_id==product_id) & (db.stock.target_partner_id==partner_id)
+    query = (db.stock.product_id==product_id)
+
+    if partner_id == None:
+        ### Get name from the last intake ###
+        query =  query & (db.stock.source_reference.startswith('WB/'))
+    else:
+        query = query & (db.stock.target_partner_id==partner_id)
+
     row = db(query).select(db.stock.id,
                            db.stock.unit_price_recorded,
-                           orderby=~db.stock.id,
+                           orderby=[~db.stock.date_of_delivery, ~db.stock.id],
                            limitby=(0,1)).first()
     if row and row.unit_price_recorded > 0:
         return row.unit_price_recorded
 
     return db.product(product_id).unit_price
+
+
+def get_last_name_of_product(product_id):
+    db = current.db
+    query = (db.stock.product_id==product_id) & (db.stock.source_reference.startswith('WB/'))
+    row = db(query).select(db.stock.product_name,
+                           orderby=[~db.stock.date_of_delivery, ~db.stock.id],
+                           limitby=(0,1)).first()
+    return row.product_name
+
+
+def get_value_of_raw_materials_in_manufacturing_order(mo_id, product_group_id):
+    db = current.db
+    mo_str = "MO/" + mo_id
+    sum_field = db.stock.value_recorded.sum()
+    query = (db.stock.source_reference.startswith(mo_str)) & (db.product.product_group==product_group_id) & (db.stock.product_id==db.product.id)
+    row = db(query).select(sum_field).first()
+
+    # lsql = db._lastsql
+    
+    return row._extra[sum_field]

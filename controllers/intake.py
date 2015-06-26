@@ -44,7 +44,7 @@ def do_intake():
             last_quantity = row.new_quantity
 
         db.stock.insert(product_id=item.product,
-                        product_name=db.product(item.product).name,
+                        product_name=item.product_name,
                         unit=item.unit,
                         quantity_change=item.quantity,
                         new_quantity=last_quantity+item.quantity,
@@ -58,6 +58,8 @@ def do_intake():
                         place_to=6, # 'alapanyag raktár'
                         date_of_delivery=waybill.date_of_delivery,
                         serial_id=waybill.date_of_delivery,
+                        unit_price_recorded=item.unit_price_recorded,
+                        value_recorded=round(item.value_recorded),
                         created=request.now,
                         remark=''
                         )

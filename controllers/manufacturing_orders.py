@@ -28,7 +28,6 @@ def get_process_link(args):
 
 @auth.requires_login()
 def calculate_picking():
-
     mo = db.manufacturing_order(request.vars.id)
     product = db.product(mo.product)
     if product.best_before_days > 45:
@@ -54,6 +53,7 @@ def calculate_picking():
         requested_stock = mo.quantity * (item.quantity / bom.quantity_of_charge)
         rest_from_order = requested_stock
         i = 1
+        actual_item_stock = 0.0
 
         for item_stock in item_stock_list['data']:
             item_stock_id = item_stock['id']
@@ -94,8 +94,9 @@ def calculate_picking():
             block['actual_stock'] = actual_stock
             block['is_out_of_stock'] = False
             if not item_stock['id']:
-                block['is_out_of_stock'] = actual_item_stock < requested_stock
-                block['missing_stock'] = round(actual_item_stock-requested_stock, 3)
+                rest_stock = round(actual_stock-requested_stock, 3)
+                block['is_out_of_stock'] = rest_stock < 0
+                block['missing_stock'] = rest_stock
             block['info'] = act_prods_info
 
             is_out_of_stock = is_out_of_stock or block['is_out_of_stock']
@@ -142,6 +143,7 @@ def finish_manufacturing():
                                                                      db.stock.best_before_date,
                                                                      db.product.name,
                                                                      db.product.unit,
+                                                                     db.stock.unit_price_recorded,
                                                                      orderby=~db.stock.id,
                                                                      limitby=(0,1)).last()
                 last_quantity = 0
@@ -172,6 +174,8 @@ def finish_manufacturing():
                                 date_of_delivery=date_of_production,
                                 serial_id=serial_id,
                                 best_before_date=last_best_before_date,
+                                unit_price_recorded=row.stock.unit_price_recorded,
+                                value_recorded=round(row.stock.unit_price_recorded*quantity),
                                 created=request.now,
                                 remark=''
                                 )
@@ -183,6 +187,7 @@ def finish_manufacturing():
                        limitby=(0,1)).first()
 
     product_last_quantity = 0
+    product_recorded_price = db.product(request.vars.product_id).unit_price
     if row:
         product_last_quantity = row.new_quantity
     db.stock.insert(product_id=request.vars.product_id,
@@ -201,6 +206,8 @@ def finish_manufacturing():
                     date_of_delivery=date_of_production,
                     serial_id=request.vars.serial_id,
                     best_before_date=request.vars.best_before_date,
+                    unit_price_recorded=product_recorded_price,
+                    value_recorded=round(product_recorded_price*float(request.vars.product_quantity)),
                     created=request.now,
                     remark=''
                     )
@@ -232,5 +239,9 @@ def finish_manufacturing():
                         maxtextlengths={'stock.product_name' : 50},)
 
     actual_stock = stock.get_actual_stock_of_product(product_id=request.vars.product_id)
+    value_of_raw_materials = stock.get_value_of_raw_materials_in_manufacturing_order(mo_id, 1)
+    value_of_finished_product = stock.get_value_of_raw_materials_in_manufacturing_order(mo_id, 3)
+    additional_value = value_of_finished_product - value_of_raw_materials
 
-    return dict(actual_stock=actual_stock['data'], new_stock_items=grid)
+    return dict(actual_stock=actual_stock['data'], new_stock_items=grid,
+                vrm=value_of_raw_materials, vfp=value_of_finished_product, addv=additional_value)

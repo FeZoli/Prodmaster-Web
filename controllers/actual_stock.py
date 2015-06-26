@@ -17,13 +17,17 @@ def update_item():
                                                   db.stock.serial_id,
                                                   db.stock.new_quantity,
                                                   db.stock.best_before_date,
+                                                  db.stock.unit_price_recorded,
+                                                  db.stock.value_recorded
                                                   ).first()
     fields.append(Field('product_name', db.stock, default=row.product_name, writable=False))
     fields.append(Field('serial_id', db.stock, default=row.serial_id, writable=False))
     fields.append(Field('best_before_date', 'date', notnull=False, default=row.best_before_date, writable=False))
     fields.append(Field('date_of_inventory', 'date', notnull=True))#, default=request.now))
     fields.append(Field('quantity_recorded', 'double', default=row.new_quantity, writable=False))
-    fields.append(Field('quantity_real', 'double', notnull=True))
+    fields.append(Field('quantity_real', 'double', default=row.new_quantity, notnull=True))
+    fields.append(Field('unit_price_recorded', 'double', default=row.unit_price_recorded, notnull=True))
+    fields.append(Field('value_recorded', 'double', default=row.value_recorded, writable=False))
     fields.append(Field('remark', 'text'))
 
     form = SQLFORM.factory(*fields)
@@ -88,6 +92,8 @@ def insert_stock_change(old_record):
                                 date_of_delivery=request.vars.date_of_inventory,
                                 serial_id=old_record.serial_id,
                                 best_before_date=old_record.best_before_date,
+                                unit_price_recorded=request.vars.unit_price_recorded,
+                                value_recorded=round(float(request.vars.unit_price_recorded)*float(request.vars.quantity_real)),
                                 created=request.now,
                                 remark=request.vars.remark
                                 )

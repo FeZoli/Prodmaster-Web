@@ -10,6 +10,14 @@ $( document ).ready(function() {
     $.get(url, function(result) {
         $('#waybill_item_unit').val(result);
         });
+        var url2 = '/' + '{{=request.application}}' + '/movements/get_last_name_of_product/?product_id=' + prod_id;
+    $.get(url2, function(result) {
+        $('#waybill_item_product_name').val(result);
+        });
+        var url3 = '/' + '{{=request.application}}' + '/movements/get_last_unit_price_of_product/?product_id=' + prod_id;
+    $.get(url3, function(result) {
+        $('#waybill_item_unit_price_recorded').val(result);
+        });
     });
 });
 </script>

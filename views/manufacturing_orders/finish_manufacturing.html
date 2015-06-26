@@ -27,7 +27,13 @@
     {{if not row['id']: }}<tr style='height:1ex;'></tr>{{pass}}
 {{pass}}
 </table>
-<br />
+<table>
+    <tr>
+        <td>{{=T('Value of Product')}}: {{=vfp}}</td>
+        <td>{{=T('Value of Raw Materials')}}: {{=vrm}}</td>
+        <td>{{=T('Additional Value')}}: {{=addv}}</td>
+    </tr>
+</table>
 <h3>
     A gyártás készletmozgásai
 </h3>

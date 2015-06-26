@@ -6,10 +6,15 @@
 $( document ).ready(function() {
     $( "#waybill_item_product" ).change(function() {
         var prod_id = $("#waybill_item_product").val();
-        var url = '/' + '{{=request.application}}' + '/waybills/get_unit/?product_id=' + prod_id;
+        var url = '/' + '{{=request.application}}' + '/products/get_unit/?product_id=' + prod_id;
     $.get(url, function(result) {
         $('#waybill_item_unit').val(result);
         });
+        var url2 = '/' + '{{=request.application}}' + '/movements/get_last_name_of_product/?product_id=' + prod_id;
+    $.get(url2, function(result) {
+        $('#waybill_item_name').val(result);
+        });
+
     });
 });
 </script>
