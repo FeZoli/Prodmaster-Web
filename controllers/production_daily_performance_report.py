@@ -15,8 +15,7 @@ def index():
 
     if request.vars.show_only_finished_products:
         q = q & (table.finished.product==True)
-        
-        
+
     links=[dict(header='Extract', body=get_daily_place_sum_link)]
 
     grid = SQLFORM.grid(q,

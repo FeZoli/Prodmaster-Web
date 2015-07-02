@@ -212,6 +212,16 @@ def finish_manufacturing():
                     remark=''
                     )
 
+    # calculate some financial indicators
+    actual_stock = stock.get_actual_stock_of_product(product_id=request.vars.product_id)
+    value_of_raw_materials = stock.get_value_of_raw_materials_in_manufacturing_order(mo_id, request.vars.product_id)
+    value_of_finished_product = stock.get_value_of_product_in_manufacturing_order(mo_id, request.vars.product_id)
+    additional_value = value_of_finished_product - value_of_raw_materials
+    cover = round((additional_value*100)/value_of_finished_product, 1)
+
+    # record the additional value of the production to the actual finished product
+    db(db.stock.source_reference==mo_id&db.stock.product_id==request.vars.product_id).update(additional_value=additional_value)
+
     ### set the status
     db(db.manufacturing_order.id==mo_id).update(status=2) #processed
 
@@ -225,6 +235,7 @@ def finish_manufacturing():
          db.stock.source_reference,
  #        db.stock.date_of_delivery,
          db.stock.serial_id,
+         db.stock.unit_price_recorded,
          db.stock.remark]
 
     ### show what happened
@@ -238,10 +249,5 @@ def finish_manufacturing():
                         csv=True,
                         maxtextlengths={'stock.product_name' : 50},)
 
-    actual_stock = stock.get_actual_stock_of_product(product_id=request.vars.product_id)
-    value_of_raw_materials = stock.get_value_of_raw_materials_in_manufacturing_order(mo_id, 1)
-    value_of_finished_product = stock.get_value_of_raw_materials_in_manufacturing_order(mo_id, 3)
-    additional_value = value_of_finished_product - value_of_raw_materials
-
     return dict(actual_stock=actual_stock['data'], new_stock_items=grid,
-                vrm=value_of_raw_materials, vfp=value_of_finished_product, addv=additional_value)
+                vrm=value_of_raw_materials, vfp=value_of_finished_product, addv=additional_value, cover=cover)

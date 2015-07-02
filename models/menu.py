@@ -53,3 +53,8 @@ if is_general_manager:
       [(T('Daily performance'), True, URL('production_daily_performance_report','index'))]),
       (T('Sales'), True, URL('sales_reports','index'))])
     response.menu.append(reports_menu)
+
+if is_general_manager:
+    maps_menu = (T('Maps'), True, URL('maps','index'),
+     [(T('Zoli'), True, URL('where_is_zoli','index'))])
+    response.menu.append(maps_menu)

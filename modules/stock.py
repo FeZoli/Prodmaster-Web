@@ -119,13 +119,23 @@ def get_last_name_of_product(product_id):
     return row.product_name
 
 
-def get_value_of_raw_materials_in_manufacturing_order(mo_id, product_group_id):
+def get_value_of_raw_materials_in_manufacturing_order(mo_id, product_id):
     db = current.db
     mo_str = "MO/" + mo_id
     sum_field = db.stock.value_recorded.sum()
-    query = (db.stock.source_reference.startswith(mo_str)) & (db.product.product_group==product_group_id) & (db.stock.product_id==db.product.id)
+    query = (db.stock.source_reference.startswith(mo_str)) & (db.stock.product_id!=product_id)
     row = db(query).select(sum_field).first()
 
     # lsql = db._lastsql
-    
+    return row._extra[sum_field]
+
+
+def get_value_of_product_in_manufacturing_order(mo_id, product_id):
+    db = current.db
+    mo_str = "MO/" + mo_id
+    sum_field = db.stock.value_recorded.sum()
+    query = (db.stock.source_reference.startswith(mo_str)) & (db.stock.product_id==product_id)
+    row = db(query).select(sum_field).first()
+
+    # lsql = db._lastsql
     return row._extra[sum_field]

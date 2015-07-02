@@ -199,6 +199,7 @@ db.define_table('stock',
                 Field('best_before_date', 'date'),
                 Field('unit_price_recorded', 'double', notnull=True),
                 Field('value_recorded', 'double', notnull=True),
+                Field('additional_value', 'double', notnull=True, default=0.0),
                 Field('created', 'datetime', writable=False, default=request.now),
                 Field('remark', 'text')
                 )
@@ -291,6 +292,7 @@ db.define_table('v_daily_place_sum_performance_financial',
                 Field('date_of_production', 'date'),
                 Field('place_from', db.place),
                 Field('value_recorded_sum', 'double'),
+                Field('additional_value_sum', 'double'),
                 migrate=False
                 )
 
@@ -299,6 +301,7 @@ db.v_daily_place_sum_performance_financial.place_from.represent = lambda id,row:
 db.define_table('v_daily_sum_performance_financial',
                 Field('date_of_production', 'date'),
                 Field('value_recorded_sum', 'double'),
+                Field('additional_value_sum', 'double'),
                 migrate=False
                 )
 
