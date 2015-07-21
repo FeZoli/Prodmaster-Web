@@ -26,9 +26,10 @@ def get_actual_stock_of_product(product_id=None, group_id=None):
         s = db(db.stock==db.product)
         q = (db.stock.product_id==product.id)
         maxing = db.stock.id.max()
-        stock_rows = s(q).select(maxing,
-                                 db.stock.new_quantity,
-                                 groupby=db.stock.serial_id)
+        stock_rows_max = s(q).select(maxing,
+                                     db.stock.serial_id,
+                                     groupby=db.stock.serial_id
+                                     )
 
         ### prepare store for summary
         tablerow_sum = dict()
@@ -37,8 +38,10 @@ def get_actual_stock_of_product(product_id=None, group_id=None):
         tablerow_sum['product_id'] = product.id
         tablerow_sum['quantity'] = 0.0
         tablerow_sum['serial_id'] = T('Total')
+        tablerow_sum['unit_price'] = ''
+        tablerow_sum['value_recorded'] = 0
 
-        for stock_row in stock_rows:
+        for stock_row in stock_rows_max:
             # relevant_stock_ids.append(stock_row._extra[maxing])
 
             q = (db.stock.product_id==product.id)&(db.stock.id==stock_row._extra[maxing])
@@ -46,6 +49,8 @@ def get_actual_stock_of_product(product_id=None, group_id=None):
                                       db.stock.product_id,
                                       db.stock.serial_id,
                                       db.stock.new_quantity,
+                                      db.stock.unit_price_recorded,
+                                      db.stock.value_recorded,
                                       orderby=[db.stock.product_name,db.stock.serial_id])
 
             for stock_row in stock_rows:
@@ -56,8 +61,11 @@ def get_actual_stock_of_product(product_id=None, group_id=None):
                     tablerow['product_id'] = stock_row.product_id
                     tablerow['quantity'] = stock_row.new_quantity
                     tablerow['serial_id'] = stock_row.serial_id
+                    tablerow['unit_price'] = stock_row.unit_price_recorded
+                    tablerow['value_recorded'] = round(stock_row.new_quantity*stock_row.unit_price_recorded)
                     tabledata.append(tablerow)
                     tablerow_sum['quantity'] += stock_row.new_quantity
+                    tablerow_sum['value_recorded'] += round(stock_row.new_quantity*stock_row.unit_price_recorded)
 
         tabledata.append(tablerow_sum)
 

@@ -7,6 +7,7 @@ response.menu = []
 
 is_general_manager = auth.has_membership('general manager')
 is_packaging_registrator = auth.has_membership('packaging registrator')
+is_public_market_manager = auth.has_membership('public market manager')
 
 index_menu = (T('Index'),URL('default','index')==URL(),URL('default','index'),[])
 response.menu.append(index_menu)
@@ -58,3 +59,10 @@ if is_general_manager:
     maps_menu = (T('Maps'), True, URL('maps','index'),
      [(T('Zoli'), True, URL('where_is_zoli','index'))])
     response.menu.append(maps_menu)
+
+if is_general_manager or is_public_market_manager:
+    markets_menu = (T('Markets'), True, URL('markets','index'),
+     [(T('Event Categories'), True, URL('market_event_categories','index')),
+      (T('Cassa'), True, URL('market_cassa','index'))
+     ])
+    response.menu.append(markets_menu)

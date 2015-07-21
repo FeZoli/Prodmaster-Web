@@ -220,7 +220,7 @@ def finish_manufacturing():
     cover = round((additional_value*100)/value_of_finished_product, 1)
 
     # record the additional value of the production to the actual finished product
-    db(db.stock.source_reference==mo_id&db.stock.product_id==request.vars.product_id).update(additional_value=additional_value)
+    db((db.stock.source_reference=='MO/'+mo_id)&(db.stock.product_id==request.vars.product_id)).update(additional_value=additional_value)
 
     ### set the status
     db(db.manufacturing_order.id==mo_id).update(status=2) #processed

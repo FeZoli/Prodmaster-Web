@@ -18,6 +18,8 @@ $( document ).ready(function() {
         <th>{{=T('ID')}}</th>
         <th>{{=T('Serial ID')}}</th>
         <th>{{=T('Recorded quantity')}}</th>
+        <th>{{=T('Unit price')}}</th>
+        <th>{{=T('Recorded value')}}</th>
     </tr>
 {{for row in data:}}
     <tr id="prod_{{=row['product_id']}}">
@@ -34,6 +36,8 @@ $( document ).ready(function() {
         <td style='{{=style}}'>{{=row['product_id']}}</td>
         <td style='{{=style}}'>{{=row['serial_id']}}</td>
         <td style='{{=style}}'>{{=row['quantity']}}</td>
+        <td style='{{=style}}'>{{=row['unit_price']}}</td>
+        <td style='{{=style}}'>{{=row['value_recorded']}}</td>
     </tr>
     {{if not row['id']: }}<tr style='height:1ex;'></tr>{{pass}}
 {{pass}}

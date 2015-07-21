@@ -274,6 +274,42 @@ db.manufacturing_order.status.represent = lambda id,row: db.waybill_status(id).n
 db.manufacturing_order.place_from.represent = lambda id,row: db.place(id).name
 db.manufacturing_order.place_to.represent = lambda id,row: db.place(id).name
 
+
+db.define_table('market',
+                Field('name', 'string', length=128, notnull=True),
+                Field('remark', 'text', label=T('Remark'))
+                )
+
+db.define_table('market_event_owner',
+                Field('name', 'string', length=128, notnull=True),
+                Field('remark', 'text', label=T('Remark'))
+                )
+
+db.define_table('market_event_category',
+                Field('name', 'string', length=128, notnull=True),
+                Field('tax', 'double', notnull=True, default=27, label=T('Tax (%)')),
+                Field('remark', 'text', label=T('Remark'))
+                )
+
+db.define_table('market_cassa',
+                Field('name', 'string', length=128, notnull=True),
+                Field('date', 'date', requires=IS_DATE(format=('%Y-%m-%d')), notnull=True, default=request.now),
+                Field('market', db.market),
+                Field('event_category', db.market_event_category),
+                Field('movement_amount', 'double', notnull=True),
+                Field('balance_before', 'integer', notnull=True, writable=False),
+                Field('balance_after', 'integer', notnull=True, writable=False),
+                Field('event_owner', db.market_event_owner),
+                Field('remark', 'text', label=T('Remark'))
+                )
+
+db.market_cassa.market.requires = IS_IN_DB(db, db.market.id, '%(name)s')
+db.market_cassa.market.represent = lambda id,row: db.market(id).name
+db.market_cassa.event_owner.requires = IS_IN_DB(db, db.market_event_owner.id, '%(name)s')
+db.market_cassa.event_owner.represent = lambda id,row: db.market_event_owner(id).name
+db.market_cassa.event_category.requires = IS_IN_DB(db, db.market_event_category.id, '%(name)s')
+db.market_cassa.event_category.represent = lambda id,row: db.market_event_category(id).name
+
 #### defining views ####
 db.define_table('v_daily_performance_financial',
                 Field('product_id', db.product),
