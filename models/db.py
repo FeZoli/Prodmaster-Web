@@ -274,6 +274,33 @@ db.manufacturing_order.status.represent = lambda id,row: db.waybill_status(id).n
 db.manufacturing_order.place_from.represent = lambda id,row: db.place(id).name
 db.manufacturing_order.place_to.represent = lambda id,row: db.place(id).name
 
+db.define_table('partner_tour_map',
+                Field('tour_name', 'string', length='64', notnull=True, unique=True),
+                Field('partner', db.partner)
+                )
+
+db.partner_tour_map.partner.requires = IS_IN_DB(db, db.partner.id, '%(name)s')
+db.partner_tour_map.partner.represent = lambda id,row: db.partner(id).name
+
+
+db.define_table('driver',
+                Field('name', 'string', length='64', notnull=True),
+                Field('remark', 'text')
+                )
+
+db.define_table('daily_tour',
+                Field('partner', db.product),
+                Field('driver', db.driver),
+                Field('date', 'date', default=request.now),
+                Field('net_income', 'integer', writable=False, default=0),
+                Field('remark', 'text')
+                )
+
+db.daily_tour.partner.requires = IS_IN_DB(db, db.partner.id, '%(name)s')
+db.daily_tour.partner.represent = lambda id,row: db.partner(id).name
+db.daily_tour.driver.requires = IS_IN_DB(db, db.driver.id, '%(name)s')
+db.daily_tour.driver.represent = lambda id,row: db.driver(id).name
+
 
 db.define_table('market',
                 Field('name', 'string', length=128, notnull=True),

@@ -68,7 +68,7 @@
   <!-- Navbar ================================================== -->
   <div class="navbar navbar-inverse">
     <div class="flash">{{=response.flash or ''}}</div>
-    <div class="navbar-inner">
+    <div class="navbar-inner" style="position:fixed;background-color:yellow;width:98%;">
       <div class="container">
         {{is_mobile=request.user_agent().is_mobile}}
         <!-- the next tag is necessary for bootstrap menus, do not remove -->
@@ -90,7 +90,7 @@
 
   <div class="container">
     <!-- Masthead ================================================== -->
-    <header id="header">
+    <header id="header" style="padding-top:40px;">
       {{if response.title:}}
         <div>
             <div>

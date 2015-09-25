@@ -39,7 +39,7 @@ if is_general_manager or is_packaging_registrator:
     if is_general_manager:
         manufacturing_submenu.append((T('Bill of materials'), True, URL('boms','index')))
     manufacturing_submenu.append((T('Manufacturing orders'), True, URL('manufacturing_orders','index')))
-    manufacturing_menu = (T('Manufacturing'), True,URL('manufacturing','index'), manufacturing_submenu)
+    manufacturing_menu = (T('Manufacturing'), True,URL('manufacturing_orders','index'), manufacturing_submenu)
     response.menu.append(manufacturing_menu)
 
 if is_general_manager:

@@ -103,6 +103,7 @@
 'customize me!': 'változtass meg!',
 'Daily performance': 'Napi teljesítmény',
 'Daily tour': 'Napi túrajárat',
+'daily_tour': 'daily_tour',
 'data uploaded': 'adat feltöltve',
 'Database': 'adatbázis',
 'Database %s select': 'adatbázis %s kiválasztás',
