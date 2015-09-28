@@ -292,7 +292,14 @@ db.define_table('daily_tour',
                 Field('partner', db.product),
                 Field('driver', db.driver),
                 Field('date', 'date', default=request.now),
+                Field('brutto_income', 'integer', writable=False, default=0),
                 Field('net_income', 'integer', writable=False, default=0),
+                Field('cash_1', 'integer', writable=False, default=0),
+                Field('cash2', 'integer', writable=False, default=0),
+                Field('deposit', 'integer', writable=False, default=0),
+                Field('rabatt', 'integer', writable=False, default=0),
+                Field('delayed_weekly', 'integer', writable=False, default=0),
+                Field('delayed_monthly', 'integer', writable=False, default=0),
                 Field('remark', 'text')
                 )
 

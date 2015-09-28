@@ -1,3 +1,9 @@
 {{extend 'layout.html'}}
-<h1>This is the daily_tour/index.html template</h1>
+{{url = URL('import_data')}}
+<form action="{{=url}}" method="post" enctype="multipart/form-data">
+    <input name="upload" type="file" size="60" maxlength="100000" />
+    <input type="submit" value="{{=T('Import data from file')}}" />
+</form>
+
+
 {{=BEAUTIFY(response._vars)}}
