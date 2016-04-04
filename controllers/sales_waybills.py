@@ -5,6 +5,7 @@ from copy import deepcopy
 
 import stock
 import local_settings
+import daily_tour_importer
 
 
 @auth.requires_login()
@@ -91,14 +92,16 @@ def myoncreate(form):
 @auth.requires_login()
 def manage_items():
     if len(request.args) > 0 and request.args[0] == 'new': return new(request.vars.waybill)
-    query = (db.waybill_item.waybill==request.vars.waybill)#&(db.waybill_item.product==db.product.id)&(db.product.can_be_sold==1)
+    elif len(request.args) > 0 and request.args[0] == 'edit': return edit(request.vars.waybill)
+    query = (db.waybill_item.waybill==request.vars.waybill)
     links = [dict(header='', body=get_source_link)]
     fields = [db.waybill_item.id, db.waybill_item.product, db.waybill_item.quantity, db.waybill_item.unit,
               db.waybill_item.serial_id, db.waybill_item.best_before_date]
     maxtextlengths = {'waybill_item.product': local_settings.product_name_max_length,
                       'unit' : local_settings.unit_max_length}
     grid = SQLFORM.grid(query, fields=fields, maxtextlengths=maxtextlengths, links=links)
-    return dict(partner_id=db.waybill(request.vars.waybill).partner, form=grid, product_rows=None)
+    waybill = db.waybill(request.vars.waybill)
+    return dict(waybill=waybill, form=grid, is_list=True, intake_link=get_intake_link(waybill))
 
 
 def new(args):
@@ -125,7 +128,36 @@ def new(args):
                 _action = URL('add_item')
                 )
 
-    return dict(partner_id=db.waybill(request.vars.waybill).partner, form=form, product_rows=None)
+    return dict(waybill=db.waybill(request.vars.waybill), form=form, is_list=False, intake_link="")
+
+
+def edit(args):
+    waybill_item = db.waybill_item(request.args[2])
+    dataset = db((db.product.can_be_sold==True)&(db.product.id==waybill_item.product))
+    rows = dataset.select(db.product.id,
+                          db.product.name,
+                          db.product.unit_price,
+                          orderby=db.product.name)
+
+    options = []
+    # options.append(OPTION('', _value=''))
+
+    for product in rows:
+        o = OPTION(product.name, _value=product.id)
+        options.append(o)
+
+    form = FORM(TABLE(
+                TR(INPUT(_type='button', _value=T('Back'), _onClick="parent.location='%s'" % request.env.http_referer)),
+                TR(INPUT(_type='hidden', _name='waybill_id', _value=request.vars.waybill)),
+                TR(T('Product Name'), SELECT(*options, _id='product_select', _name='product_id')),
+                TR(T('Unit'), TD(_id='unit_text')),
+                TR(T('Unit Price'), INPUT(_name='unit_price_recorded', _id='unit_price_recorded', _value=product.unit_price)),
+                TR(INPUT(_type='submit')),
+                _id='datatable'),
+                _action = URL('add_item')
+                )
+
+    return dict(waybill=db.waybill(request.vars.waybill), form=form, is_list=False, intake_link="")
 
 
 @auth.requires_login()
@@ -156,3 +188,47 @@ def add_item():
 
     redirect(URL('manage_items', vars=dict(waybill=request.vars.waybill_id)))
     return None
+
+
+@auth.requires_login()
+def import_data():
+    import shutil
+    if request.vars:
+        filename = request.vars.upload.filename
+        import_day = request.vars.import_day
+        file = request.vars.upload.file
+        filename = 'applications/FoodMaster/daily_tour_data/' + filename
+        shutil.copyfileobj(file, open(filename, 'wb'))
+
+    data = []
+
+    for rows in daily_tour_importer.get_raw_data(filename, import_day):
+        if rows[1] != None:
+            cell_date = None
+            for cell in rows:
+                if cell.row >= 50: ### TODO: repair
+
+                    cell_value = 0
+                    if cell.column in ('C', 'E', 'G', 'I', 'K', 'M', 'O'):
+                        cell_date = cell.value
+                    elif cell.column in ('D', 'F', 'H', 'J', 'L', 'N', 'P'):
+                        cell_value = cell.value
+
+                    if cell_value > 0 and cell_date != None:
+                        product = db(db.daily_tour_import_mapping.row_number==cell.row).select(db.daily_tour_import_mapping.product).first().product
+                        db.waybill_item.insert(waybill=request.vars.waybill,
+                                               product=product.id,
+                                               product_name=product.name,
+                                               unit=product.unit,
+                                               quantity=cell_value,
+                                               unit_price_recorded=product.unit_price,
+                                               serial_id=cell_date.date(),
+                                               best_before_date=cell_date.date(),
+                                               remark=T('Imported record'))
+                        cell_date = None
+
+
+    if request.env.http_referer:
+        redirect(request.env.http_referer)
+
+    return dict(data=None)

@@ -5,6 +5,7 @@
 {{if request.args and ('new' in request.args or 'edit' in request.args) :}}
 <script>
 var count_for_sync = 1;
+
 $( document ).ready(function() {
     var prod_id = $("#manufacturing_order_product").val();
     adjust_boms(prod_id);

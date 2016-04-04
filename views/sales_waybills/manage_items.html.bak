@@ -1,13 +1,34 @@
 {{extend 'layout.html'}}
+<h3>
+    {{=request.args}}<br>
+    {{=db.partner[waybill.partner].name}}, {{=waybill.date_of_delivery}}
+</h3>
+<div>
+    {{=intake_link}}
+</div>
 
+{{if is_list:}}
+    <div style="width:100%;text-align:right;">
+        {{url = URL('import_data')}}
+        <form action="{{=url}}" method="post" enctype="multipart/form-data">
+            <input name="upload" type="file" size="60" maxlength="100000" />
+            {{=T('Day:')}}&nbsp;<input name="import_day" size="2" /></br>
+            <input name="waybill" type="hidden" value="{{=request.vars.waybill}}" />
+            <input type="submit" value="{{=T('Import data from file')}}" />
+        </form>
+    </div>
+{{pass}}
 
 {{if form:}}
     {{=form}}
 {{pass}}
 
+{{if not is_list:}}
+<!-- if not is_list... -->
 <script>
-$( document ).ready(function() {
-    $( "#product_select" ).change(function() {
+
+function update_stock_fields() {
+            alert('0');
         $('#product_select').prop('disabled', true);
         $('#unit_text').prop('disabled', true);
         $('#unit_price_recorded').prop('disabled', true);
@@ -20,7 +41,7 @@ $( document ).ready(function() {
 
         var url3 = '/' + '{{=request.application}}'
                     + '/products/get_last_or_recorded_price_of_product/?product_id=' + prod_id
-                    + '&partner_id=' + {{=partner_id}};
+                    + '&partner_id=' + {{=waybill.partner}};
         $.get(url3, function(result) {
             $('#unit_price_recorded').val(result);
         });
@@ -45,7 +66,35 @@ $( document ).ready(function() {
             $('#unit_text').prop('disabled', false);
             $('#unit_price_recorded').prop('disabled', false);
         });
+
+
+}
+
+
+$( document ).ready(function() {
+    $('#product_select').change(function() {
+        update_stock_fields();
     });
 });
-    
+
 </script>
+<!-- if not is_list... -->
+{{pass}}
+
+{{if len(request.args) > 0 and request.args[0] == 'edit':}}
+<!-- if request.args[0] == 'edit... -->
+<script>
+
+    alert("bvbvc");
+    update_stock_list();
+
+</script>
+
+
+<h2>
+EDIT
+</h2>
+
+<!-- if request.args[0] == 'edit... -->
+
+{{pass}}

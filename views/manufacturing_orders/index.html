@@ -38,8 +38,9 @@ function adjust_boms(prod_id) {
             var name = $(this).find('name').text();
             new_options += '<option value=' + id + '>' + name + '</option>';
             /* set places */
-            var place_from = $(this).find('place_from').text();
-            $("#manufacturing_order_place_from").val(place_from);
+            // Zoli commented out to force setting on the GUI
+            // var place_from = $(this).find('place_from').text();
+            //$("#manufacturing_order_place_from").val(place_from);
             var place_to = $(this).find('place_to').text();
             $("#manufacturing_order_place_to").val(place_to);
         });

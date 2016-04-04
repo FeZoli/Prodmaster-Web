@@ -49,6 +49,10 @@ response.generic_patterns = ['*'] # if request.is_local else []
 ## (more options discussed in gluon/tools.py)
 #########################################################################
 
+#### module development purposes. Comment out, when finished!
+from gluon.custom_import import track_changes; track_changes(True)
+
+
 from gluon.tools import Auth, Service, PluginManager
 
 auth = Auth(db)
@@ -143,7 +147,7 @@ db.define_table('waybill_status',
 db.define_table('waybill',
                 Field('partner', db.partner),
                 Field('date_of_delivery', 'date', notnull=True),
-                Field('reference', 'string', length=16),
+                Field('reference', 'string', length=32),
                 Field('status', db.waybill_status, writable=False, notnull=True, default=1),
                 Field('is_delivery', 'boolean', notnull=True, default=True, writable=False, readable=False),
                 Field('remark', 'text')
@@ -308,6 +312,14 @@ db.daily_tour.partner.represent = lambda id,row: db.partner(id).name
 db.daily_tour.driver.requires = IS_IN_DB(db, db.driver.id, '%(name)s')
 db.daily_tour.driver.represent = lambda id,row: db.driver(id).name
 
+db.define_table('daily_tour_import_mapping',
+                Field('product', db.product, unique=True),
+                Field('row_number', 'integer', notnull=True, unique=False),
+                Field('remark', 'text')
+                )
+
+db.daily_tour_import_mapping.product.requires = IS_IN_DB(db, db.product.id, '%(name)s')
+db.daily_tour_import_mapping.represent = lambda id,row: db.pproduct(id).name
 
 db.define_table('market',
                 Field('name', 'string', length=128, notnull=True),
