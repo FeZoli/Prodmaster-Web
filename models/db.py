@@ -15,7 +15,7 @@ request.requires_https()
 
 #if not request.env.web2py_runtime_gae:
     ## if NOT running on Google App Engine use SQLite or other DB
-db = DAL('mysql://minux:nemerdekel@localhost/foodmaster', migrate=True)
+db = DAL('mysql://username:passwd@host/db', migrate=True)
 
 current.db = db ## to be available from modules
 
@@ -114,12 +114,10 @@ db.define_table('unit',
                 Field('remark', 'text')
                 )
 
-
 db.define_table('product_group',
                 Field('name', 'string', length=32, unique=True, notnull=True),
                 Field('remark', 'text')
                 )
-
 
 db.define_table('product',
                 Field('name', 'string', length=128, unique=True, notnull=True),
@@ -139,6 +137,17 @@ db.product.product_group.represent = lambda id,row: db.product_group(id).name
 db.product.unit.represent = lambda id,row: db.unit(id).name
 db.product.product_group.requires = IS_IN_DB(db, db.product_group.id, '%(name)s')
 
+db.define_table('car',
+                Field('name', 'string', length=32, notnull=True, unique=True),
+                Field('plate_number', 'string', length=16, notnull=True, unique=True),
+                Field('remark', 'text')
+                )
+
+db.define_table('worker',
+                Field('name', 'string', length=32, notnull=True, unique=True),
+                Field('remark', 'text')
+                )
+
 db.define_table('waybill_status',
                 Field('name', 'string', length=16, notnull=True),
                 Field('remark', 'text')
@@ -148,6 +157,8 @@ db.define_table('waybill',
                 Field('partner', db.partner),
                 Field('date_of_delivery', 'date', notnull=True),
                 Field('reference', 'string', length=32),
+                Field('worker', db.worker),
+                Field('car', db.car),
                 Field('status', db.waybill_status, writable=False, notnull=True, default=1),
                 Field('is_delivery', 'boolean', notnull=True, default=True, writable=False, readable=False),
                 Field('remark', 'text')
@@ -155,6 +166,10 @@ db.define_table('waybill',
 
 db.waybill.partner.requires = IS_IN_DB(db, db.partner.id, '%(name)s')
 db.waybill.partner.represent = lambda id,row: db.partner(id).name
+db.waybill.worker.requires = IS_IN_DB(db, db.worker.id, '%(name)s')
+db.waybill.worker.represent = lambda id,row: db.worker(id).name
+db.waybill.car.requires = IS_IN_DB(db, db.car.id, '%(plate_number)s')
+db.waybill.car.represent = lambda id,row: db.car(id).plate_number
 db.waybill.status.requires = IS_IN_DB(db, db.waybill_status.id, '%(name)s')
 db.waybill.status.represent = lambda id,row: db.waybill_status(id).name
 
