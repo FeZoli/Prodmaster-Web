@@ -15,7 +15,11 @@ request.requires_https()
 
 #if not request.env.web2py_runtime_gae:
     ## if NOT running on Google App Engine use SQLite or other DB
+<<<<<<< HEAD
 db = DAL('mysql://username:passwd@host/db', migrate=True)
+=======
+db = DAL('mysql://user:pass@host/dbname', migrate=True)
+>>>>>>> 4bb08c2feca2e0bd718a90aea0564ec2a60334cf
 
 current.db = db ## to be available from modules
 
