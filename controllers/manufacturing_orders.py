@@ -19,12 +19,33 @@ def get_process_link(args):
     if not db(db.bom.product==db.manufacturing_order(args.id).product).select().first():
         return T("No BOM available!")
     if db.manufacturing_order(args.id).status != 1 :
-        url = '/' + request.application + '/stock/get_mo?mid=' + str(args.id)
+        url = URL('get_source', vars=dict(mid=str(args.id)))
         return A(T('Sources'), _href=url)
 
     url = '/' + request.application + '/manufacturing_orders/calculate_picking?id=' + str(args.id)
     return A(T('Manufacture !'), _href=url)
 
+@auth.requires_login()
+def get_source():
+    mo_id_str = "MO/" + request.vars.mid
+    q = db.stock.source_reference==mo_id_str
+    date_of_manufacturing = db.manufacturing_order(request.vars.mid).planned_date
+
+    f = [db.stock.product_name,
+         db.stock.unit,
+         db.stock.quantity_change,
+         db.stock.serial_id]
+
+    grid = SQLFORM.grid(q,
+                        fields=f,
+                        create=False,
+                        editable=False,
+                        deletable=False,
+                        searchable=False,
+                        csv=True,
+                        maxtextlengths={'stock.product_name' : local_settings.product_name_max_length},)
+
+    return dict(grid=grid, mo_id_str=mo_id_str, date_of_manufacturing=date_of_manufacturing)
 
 @auth.requires_login()
 def calculate_picking():
@@ -247,7 +268,7 @@ def finish_manufacturing():
                         deletable=False,
                         searchable=False,
                         csv=True,
-                        maxtextlengths={'stock.product_name' : 50},)
+                        maxtextlengths={'stock.product_name' : local_settings.product_name_max_length},)
 
     return dict(actual_stock=actual_stock['data'], new_stock_items=grid,
                 vrm=value_of_raw_materials, vfp=value_of_finished_product, addv=additional_value, cover=cover)
