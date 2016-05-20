@@ -15,7 +15,8 @@ response.menu.append(index_menu)
 if is_general_manager:
     basic_data_menu = (T('Basic Data'), True,URL('warehouse','index'),
      [(T('Partners'), True, URL('partners','index')),
-      (T('Products'), True, URL('products','index'))])
+      (T('Products'), True, URL('products','index')),
+     (T('Product Groups'), True, URL('product_groups','index'))])
     response.menu.append(basic_data_menu)
 
 if is_general_manager or is_packaging_registrator:
