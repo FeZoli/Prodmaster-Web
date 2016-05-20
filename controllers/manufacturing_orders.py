@@ -11,7 +11,8 @@ def index():
     grid = SQLFORM.grid(db.manufacturing_order,
                         links=[dict(header='', body=get_process_link)],
                         maxtextlengths={'manufacturing_order.product' : local_settings.product_name_max_length},
-                        orderby='status, ~planned_date')
+                        orderby='status, ~planned_date',
+                        deletable=False)
 
     return dict(manufacturing_order_list=grid)
 
