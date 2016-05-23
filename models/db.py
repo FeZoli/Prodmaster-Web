@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from gluon import current
-
 from datetime import timedelta,date
+import dbdata
 
 #########################################################################
 ## This scaffolding model makes your app work on Google App Engine too
@@ -11,12 +11,11 @@ from datetime import timedelta,date
 
 ## if SSL/HTTPS is properly configured and you want all HTTP requests to
 ## be redirected to HTTPS, uncomment the line below:
-request.requires_https()
+# request.requires_https()
 
 #if not request.env.web2py_runtime_gae:
     ## if NOT running on Google App Engine use SQLite or other DB
-db = DAL('mysql://user:pass@host/dbname', migrate=True)
-
+db = dbdata.get_db()
 current.db = db ## to be available from modules
 
 # db = DAL('sqlite:///home/fekete/backup/FoodMaster/FoodMaster.db', migrate=True)
@@ -51,8 +50,6 @@ response.generic_patterns = ['*'] # if request.is_local else []
 
 #### module development purposes. Comment out, when finished!
 from gluon.custom_import import track_changes; track_changes(True)
-
-
 from gluon.tools import Auth, Service, PluginManager
 
 auth = Auth(db)
@@ -114,6 +111,11 @@ db.define_table('unit',
                 Field('remark', 'text')
                 )
 
+db.define_table('product_subgroup',
+                Field('name', 'string', length=32, unique=True, notnull=True),
+                Field('remark', 'text')
+                )
+
 db.define_table('product_group',
                 Field('name', 'string', length=32, unique=True, notnull=True),
                 Field('remark', 'text')
@@ -136,6 +138,16 @@ db.product.unit.requires = IS_IN_DB(db, db.unit.id, '%(name)s')
 db.product.product_group.represent = lambda id,row: db.product_group(id).name
 db.product.unit.represent = lambda id,row: db.unit(id).name
 db.product.product_group.requires = IS_IN_DB(db, db.product_group.id, '%(name)s')
+
+db.define_table('product_subgroup_map',
+                Field('product', db.product),
+                Field('product_subgroup', db.product_subgroup)
+                )
+
+db.product_subgroup_map.product.requires = IS_IN_DB(db, db.product.id, '%(name)s')
+db.product_subgroup_map.product.represent = lambda id,row: db.product(id).name
+db.product_subgroup_map.product_subgroup.represent = lambda id,row: db.product_subgroup(id).name
+db.product_subgroup_map.product_subgroup.requires = IS_IN_DB(db, db.product_subgroup.id, '%(name)s')
 
 db.define_table('car',
                 Field('name', 'string', length=32, notnull=True, unique=True),
@@ -292,6 +304,42 @@ db.manufacturing_order.status.requires = IS_IN_DB(db, db.waybill_status.id, '%(n
 db.manufacturing_order.status.represent = lambda id,row: db.waybill_status(id).name
 db.manufacturing_order.place_from.represent = lambda id,row: db.place(id).name
 db.manufacturing_order.place_to.represent = lambda id,row: db.place(id).name
+
+
+db.define_table('sales_order',
+                Field('partner', db.partner, label=T('Partner')),
+                Field('worker', db.worker),
+                Field('car', db.car),
+                Field('delivery_date', 'date', notnull=True, requires=IS_DATE(format=T('%Y-%m-%d')), label=T('Delivery Date')),
+                Field('status', db.waybill_status, writable=False, default=1, label=T('Status')),
+                Field('remark', 'text', label=T('Remark'))
+                )
+
+db.sales_order.partner.requires = IS_IN_DB(db, db.partner.id, '%(name)s')
+db.sales_order.partner.represent = lambda id,row: db.partner(id).name
+db.sales_order.worker.requires = IS_IN_DB(db, db.worker.id, '%(name)s')
+db.sales_order.worker.represent = lambda id,row: db.worker(id).name
+db.sales_order.car.requires = IS_IN_DB(db, db.car.id, '%(plate_number)s')
+db.sales_order.car.represent = lambda id,row: db.car(id).plate_number
+db.sales_order.status.requires = IS_IN_DB(db, db.waybill_status.id, '%(name)s')
+db.sales_order.status.represent = lambda id,row: db.waybill_status(id).name
+
+db.define_table('sales_order_item',
+                Field('sales_order', db.sales_order, label=T('Order'), writable=False),
+                Field('product', db.product),
+                Field('bom', db.bom),
+                Field('unit', db.unit),
+                Field('quantity', 'double', notnull=True, label=T('Quantity')),
+                Field('remark', 'text', label=T('Remark'))
+                )
+
+db.sales_order_item.sales_order.requires = IS_IN_DB(db, db.sales_order.id, '%(id)s %(partner)s %(delivery_date)s')
+db.sales_order_item.product.requires = IS_IN_DB(db, db.product.id, '%(name)s')
+db.sales_order_item.unit.requires = IS_IN_DB(db, db.unit.id, '%(name)s')
+db.sales_order_item.product.represent = lambda id,row: db.product(id).name
+db.sales_order_item.unit.represent = lambda id,row: db.unit(id).name
+db.sales_order_item.quantity.requires = IS_EXPR('value>0')
+
 
 db.define_table('partner_tour_map',
                 Field('tour_name', 'string', length='64', notnull=True, unique=True),
