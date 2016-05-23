@@ -1,3 +1,13 @@
 {{extend 'layout.html'}}
 
-<h1>{{=request.title}}</h1>
+<div style="width:100%;">
+<div id="orders" style="float:left;width:49.5%;background-color:lightgreen;">
+{{=T('Orders')}}
+{{=ods}}
+</div>
+<div id="manufacturing_orders" style="float:right;width:49.5%;background-color:lightblue;">
+{{=T('Manufacturing  Program')}}
+{{=mos}}
+</div>
+</div>
+<div style="clear:both"></div>

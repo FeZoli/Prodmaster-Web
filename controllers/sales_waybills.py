@@ -14,11 +14,12 @@ def index():
     links = [dict(header='', body=get_intake_link),
              dict(header='', body=get_items_link)]
     grid = SQLFORM.grid(query,
-                        onvalidation=validate_item,
-                        orderby='~id',
-                        links=links,
-                        links_in_grid=True,
-                        ondelete="myondelete")
+                         onvalidation=validate_item,
+                         orderby='~id',
+                         links=links,
+                         links_in_grid=True)
+                         #oncreate=myoncreate)
+                         #onupdate=myoncreate)
 
     return dict(waybill_list=grid)
 
@@ -65,7 +66,7 @@ def pick():
 def get_intake_link(args):
     if db.waybill(args.id).status != 1 : return '' # intake only if recorded
 
-    url = '/' + request.application + '/delivery/do_delivery?waybill=' + str(args.id)
+    url = '/' + request.application + '/delivery/?waybill=' + str(args.id)
     return A(T('Deliver'), _href=url)
 
 def get_items_link(args):
@@ -84,35 +85,22 @@ def get_unit():
     return unit.id
 
 
-@auth.requires_login()
-def myoncreate():
-    redirect(URL('pick'), vars=dict(product_id=form.vars.product))
-    return None
-
-
-@auth.requires_login()
-def myondelete():
-    db(db.waybill_item.waybill==request.vars.waybill).delete()
-    session.flash = T('All records deleted.')
-    return None
-
+def myoncreate(form):
+    redirect(URL('pick', vars=dict(product_id=form.vars.product)))
+    pass
 
 @auth.requires_login()
 def manage_items():
     if len(request.args) > 0 and request.args[0] == 'new': return new(request.vars.waybill)
-    elif len(request.args) > 0 and request.args[0] == 'edit': return edit(request.vars.waybill)
-    query = (db.waybill_item.waybill==request.vars.waybill)
+    query = (db.waybill_item.waybill==request.vars.waybill)#&(db.waybill_item.product==db.product.id)&(db.product.can_be_sold==1)
     links = [dict(header='', body=get_source_link)]
     fields = [db.waybill_item.id, db.waybill_item.product, db.waybill_item.quantity, db.waybill_item.unit,
               db.waybill_item.serial_id, db.waybill_item.best_before_date]
     maxtextlengths = {'waybill_item.product': local_settings.product_name_max_length,
                       'unit' : local_settings.unit_max_length}
-    grid = SQLFORM.grid(query,
-                        fields=fields,
-                        maxtextlengths=maxtextlengths,
-                        links=links)
+    grid = SQLFORM.grid(query, fields=fields, maxtextlengths=maxtextlengths, links=links)
     waybill = db.waybill(request.vars.waybill)
-    return dict(waybill=waybill, form=grid, is_list=True, intake_link=get_intake_link(waybill))
+    return dict(waybill=waybill, form=grid, is_list=True, intake_link="")
 
 
 def new(args):
@@ -137,37 +125,6 @@ def new(args):
                 TR(T('Unit Price'), INPUT(_name='unit_price_recorded', _id='unit_price_recorded', _value=product.unit_price)),
                 _id='datatable'),
                 _action = URL('add_item')
-                )
-
-    return dict(waybill=db.waybill(request.vars.waybill), form=form, is_list=False, intake_link="")
-
-
-def edit(args):
-    waybill_item = db.waybill_item(request.args[2])
-    dataset = db((db.product.can_be_sold==True)&(db.product.id==waybill_item.product))
-    rows = dataset.select(db.product.id,
-                          db.product.name,
-                          db.product.unit_price,
-                          orderby=db.product.name)
-
-    options = []
-
-    for product in rows:
-        o = OPTION(product.name, _value=product.id)
-        options.append(o)
-
-    form = FORM(TABLE(
-                TR(INPUT(_type='button', _value=T('Back'), _onClick="parent.location='%s'" % request.env.http_referer)),
-                TR(INPUT(_type='submit')),
-                TR(INPUT(_type='hidden', _name='waybill_id', _value=request.vars.waybill)),
-                TR(INPUT(_type='hidden', _name='waybill_item_id', _value=waybill_item.id)),
-                TR(T('Product Name'), SELECT(*options, _id='product_select', _name='product_id')),
-                TR(T('Unit'), TD(_id='unit_text')),
-                TR(T('Quantity'), TD(waybill_item.quantity, _name='quantity', _id='quantity', _disabled=True)),
-                TR(T('Serial ID recorded'), TD(waybill_item.serial_id, _name='sid_recorded', _id='sid_recorded', _disabled=True)),
-                TR(T('Unit Price'), INPUT(_name='unit_price_recorded', _id='unit_price_recorded', _value=product.unit_price)),
-                _id='datatable'),
-                _action = URL('update_item')
                 )
 
     return dict(waybill=db.waybill(request.vars.waybill), form=form, is_list=False, intake_link="")
@@ -198,53 +155,6 @@ def add_item():
                                        serial_id=serial_id,
                                        best_before_date=best_before_date,
                                        remark='')
-
-    redirect(URL('manage_items', vars=dict(waybill=request.vars.waybill_id)))
-    return None
-
-
-@auth.requires_login()
-def update_item():
-    delete_is_required = True
-    was_updated = False
-
-    for selling_item in request.vars:
-        if selling_item.startswith('sid'):
-            selling_data = selling_item.split(':')
-            serial_id = selling_data[1]
-            best_before_date = db.stock(stock.get_stock_id_of_product_by_serial_id(request.vars.product_id,
-                                                                          serial_id)).best_before_date
-            quantity = 0.0
-            if request.vars[selling_item]:
-                quantity = float(request.vars[selling_item])
-
-            if quantity > 0 and not was_updated:
-                db(db.waybill_item.id==request.vars.waybill_item_id).update(
-                                       quantity=quantity,
-                                       unit_price_recorded=float(request.vars.unit_price_recorded),
-                                       serial_id=serial_id,
-                                       best_before_date=best_before_date,
-                                       remark='')
-                # leave at the 1st Non zero
-                delete_is_required = False
-                was_updated = True
-            elif quantity > 0 and was_updated:
-                product = db(db.product.id==request.vars.product_id).select(db.product.id,
-                                                                db.product.name,
-                                                                db.product.unit).first()
-                db.waybill_item.insert(waybill=request.vars.waybill_id,
-                                       product=product.id,
-                                       product_name=product.name,
-                                       unit=product.unit,
-                                       quantity=quantity,
-                                       unit_price_recorded=float(request.vars.unit_price_recorded),
-                                       serial_id=serial_id,
-                                       best_before_date=best_before_date,
-                                       remark='')
-
-    if delete_is_required:
-        db(db.waybill_item.id==request.vars.waybill_item_id).delete()
-        response.flash = T("Item deleted.")
 
     redirect(URL('manage_items', vars=dict(waybill=request.vars.waybill_id)))
     return None

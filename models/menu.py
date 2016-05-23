@@ -45,7 +45,8 @@ if is_general_manager or is_packaging_registrator:
 
 if is_general_manager:
     sales_menu = (T('Sales'), True,URL('sales','index'),
-     [(T('Waybills'), True, URL('sales_waybills','index')),
+     [(T('Orders'), True, URL('sales_orders','index')),
+      (T('Waybills'), True, URL('sales_waybills','index')),
       (T('Daily tour'), True, URL('daily_tour','index'))])
     response.menu.append(sales_menu)
 
