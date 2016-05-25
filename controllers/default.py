@@ -8,9 +8,7 @@ def download(): return response.download(request,db)
 def call(): return service()
 ### end requires
 
-
-
-
+@auth.requires_login()
 def index():
     f = [db.sales_order.partner,
          db.sales_order.delivery_date,
@@ -35,7 +33,7 @@ def index():
          db.manufacturing_order.quantity,
          db.manufacturing_order.unit,
          db.sales_order.remark]
-    
+
     q2 = (db.manufacturing_order.status==db.waybill_status.id)&(db.waybill_status.name=="recorded")
     mos = SQLFORM.grid(q2,
                        fields=f,
