@@ -162,6 +162,7 @@ db.define_table('worker',
 
 db.define_table('waybill_status',
                 Field('name', 'string', length=16, notnull=True),
+                Field('weight', 'integer'),
                 Field('remark', 'text')
                 )
 
@@ -311,7 +312,7 @@ db.define_table('sales_order',
                 Field('worker', db.worker),
                 Field('car', db.car),
                 Field('delivery_date', 'date', notnull=True, requires=IS_DATE(format=T('%Y-%m-%d')), label=T('Delivery Date')),
-                Field('status', db.waybill_status, writable=False, default=1, label=T('Status')),
+                Field('status', db.waybill_status, writable=True, default=1, label=T('Status')),
                 Field('remark', 'text', label=T('Remark'))
                 )
 
