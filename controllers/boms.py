@@ -14,7 +14,7 @@ def index():
 def validate_item(form):
     if form.vars.product != None:
         right_unit = db.product(form.vars.product).unit
-        if form.vars.unit != str(right_unit.id):
+        if form.vars.unit != right_unit.id:
             form.errors.unit = T('unit can be only \'%s\' for this product') % right_unit.name
 
 
