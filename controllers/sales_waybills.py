@@ -117,7 +117,6 @@ def manage_items():
 
 
 def new(args):
-    response.flash = "szeva"
     dataset = db(db.product.can_be_sold==True)
     rows = dataset.select(db.product.id,
                           db.product.name,
@@ -186,11 +185,12 @@ def add_item():
             serial_id = selling_data[1]
             best_before_date = db.stock(stock.get_stock_id_of_product_by_serial_id(request.vars.product_id,
                                                                           serial_id)).best_before_date
+
             quantity = 0.0
             if request.vars[selling_item]:
                 quantity = float(request.vars[selling_item])
 
-            if quantity > 0:
+            if quantity > 0.001:
                 db.waybill_item.insert(waybill=request.vars.waybill_id,
                                        product=product.id,
                                        product_name=product.name,
