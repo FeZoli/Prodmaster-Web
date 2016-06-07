@@ -309,6 +309,7 @@ db.manufacturing_order.place_to.represent = lambda id,row: db.place(id).name
 
 db.define_table('sales_order',
                 Field('partner', db.partner, label=T('Partner')),
+                Field('place_of_delivery', 'string', length=64),
                 Field('worker', db.worker),
                 Field('car', db.car),
                 Field('delivery_date', 'date', notnull=True, requires=IS_DATE(format=T('%Y-%m-%d')), label=T('Delivery Date')),

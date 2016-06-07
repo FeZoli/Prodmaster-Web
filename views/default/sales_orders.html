@@ -1,0 +1,6 @@
+{{extend 'layout.html'}}
+<h3>
+    {{=so.partner.name}},&nbsp;
+    {{=so.sales_order.delivery_date.strftime("%Y-%m-%d (%A)")}},&nbsp;
+    {{=so.sales_order.place_of_delivery or T("N/A")}}&nbsp;
+</h3>
