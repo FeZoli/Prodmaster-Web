@@ -51,7 +51,7 @@ def do_delivery():
                         product_name=item.product_name,
                         unit=item.unit,
                         quantity_change=0-item.quantity,
-                         new_quantity=last_quantity-item.quantity,
+                        new_quantity=round(last_quantity-item.quantity, 3),
                         source_partner_id=0,
                         source_partner_name='Ostya 84',
                         source_doc_id=waybill.id,
