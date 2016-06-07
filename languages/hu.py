@@ -361,6 +361,7 @@
 'Serial id': 'Sorozatszám',
 'Serial ID': 'Sorozatszám',
 'Serial Id': 'Sorozatszám',
+'Serial ID recorded': 'Serial ID recorded',
 'Services': 'Szolgáltatások',
 'Show Finished and Unfinished Products': 'Félkész és késztermékek megjelenítése',
 'Show Only Finished Products': 'Csak a késztermékek megjelenítése',
