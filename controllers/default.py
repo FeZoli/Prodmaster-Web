@@ -10,29 +10,33 @@ def call(): return service()
 
 @auth.requires_login()
 def index():
+
+    order_dict = {}
+
     f = [db.sales_order.id,
          db.sales_order.partner,
          db.sales_order.delivery_date,
-         db.sales_order_item.product,
          db.sales_order.remark]
 
-    links = [dict(header='', body=get_details_link),]
+    # links = [dict(header='', body=get_details_link),]
 
     q1 = (db.sales_order.status==db.waybill_status.id)&(db.waybill_status.name.contains(['recorded'], ['ordered']))
-    q1 = q1&(db.sales_order_item.sales_order==db.sales_order.id)
-    ods = SQLFORM.grid(q1,
-                       fields=f,
-                       links=links,
-                       links_in_grid=True,
-                       maxtextlengths={'sales_order.partner' : local_settings.partner_name_max_length,
-                                       'sales_order_item.product' : local_settings.product_name_max_length},
-                       orderby='sales_order.delivery_date, sales_order.status',
-                       create=False,
-                       editable=False,
-                       deletable=False,
-                       searchable=False,
-                       details=False,
-                       csv=False)
+    # q1 = q1&(db.sales_order_item.sales_order==db.sales_order.id)
+
+    rows = db(q1).select(db.sales_order.id,
+                         db.sales_order.partner,
+                         db.sales_order.delivery_date,
+                         db.sales_order.place_of_delivery,
+                         db.sales_order.worker,
+                         db.sales_order.car,
+                         db.sales_order.remark)
+
+    for row in rows:
+        order_items = db(db.sales_order_item.sales_order==row.id).select(db.sales_order_item.product,
+                                                                         db.sales_order_item.quantity,
+                                                                         db.sales_order_item.remark)
+        order_dict[row] = order_items
+
 
     f = [db.manufacturing_order.product,
          db.manufacturing_order.planned_date,
@@ -52,7 +56,7 @@ def index():
                        details=False,
                        csv=False)
 
-    return dict(ods=ods, mos=mos)
+    return dict(ods=order_dict, mos=mos)
 
 
 def get_details_link(args):
