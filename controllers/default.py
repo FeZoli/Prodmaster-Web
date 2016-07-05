@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import local_settings
+from collections import OrderedDict
 
 ### required - do no delete
 def user(): return dict(form=auth())
@@ -11,7 +12,7 @@ def call(): return service()
 @auth.requires_login()
 def index():
 
-    order_dict = {}
+    order_dict = OrderedDict()
 
     f = [db.sales_order.id,
          db.sales_order.partner,
@@ -29,7 +30,8 @@ def index():
                          db.sales_order.place_of_delivery,
                          db.sales_order.worker,
                          db.sales_order.car,
-                         db.sales_order.remark)
+                         db.sales_order.remark,
+                         orderby=db.sales_order.delivery_date)
 
     for row in rows:
         order_items = db(db.sales_order_item.sales_order==row.id).select(db.sales_order_item.product,
