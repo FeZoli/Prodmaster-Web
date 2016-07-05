@@ -3,7 +3,34 @@
 <div style="width:100%;">
 <div id="orders" style="float:left;width:49.5%;background-color:lightgreen;">
 {{=T('Orders')}}
-{{=ods}}
+<div class="web2py_grid"><div class="web2py_console">
+<table>
+{{tstyle = "odd"}}
+{{for order in ods.keys():}}
+    <tr class="{{=tstyle}}">
+        <th colspan=2>{{=order.delivery_date}},&nbsp;
+                      {{=order.partner.name}},&nbsp;
+                      {{=order.place_of_delivery}},&nbsp;
+                      {{=order.worker.name}},&nbsp;
+                      {{=order.car.plate_number}}</th>
+    </tr>
+        {{for row in ods[order]:}}
+        <tr class="{{=tstyle}}">
+            <td>{{=row.product.name}}<br>{{=row.remark}}</td>
+            <td>{{=row.quantity}}&nbsp;{{=row.product.unit.name}}</td>
+        </tr>
+        {{pass}}
+
+    {{if tstyle == "odd":}}
+        {{tstyle = "even"}}
+    {{else:}}
+        {{tstyle = "odd"}}
+    {{pass}}
+
+{{pass}}
+</table>
+</div>
+</div>
 </div>
 <div id="manufacturing_orders" style="float:right;width:49.5%;background-color:lightblue;">
 {{=T('Manufacturing  Program')}}

@@ -296,6 +296,7 @@
 'Password': 'Jelszó',
 'pick': 'kihúzás',
 'Place From': 'Származási hely',
+'Place Of Delivery': 'Place Of Delivery',
 'Place To': 'Cél hely',
 'Planned Date': 'Tervezett dátum',
 'Plugins': 'Bővítmények',
