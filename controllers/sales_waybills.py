@@ -117,7 +117,6 @@ def manage_items():
 
 
 def new(args):
-    response.flash = "szeva"
     dataset = db(db.product.can_be_sold==True)
     rows = dataset.select(db.product.id,
                           db.product.name,

@@ -66,6 +66,8 @@ def do_delivery():
 
     db(db.waybill.id==waybill.id).update(status=2) #delivered
 
+    check_and_update_sales_order_status(waybill_items)
+
     f = [db.stock.product_name,
          db.stock.unit,
          db.stock.quantity_change,
@@ -87,3 +89,14 @@ def do_delivery():
                         maxtextlengths={'stock.product_name' : local_settings.product_name_max_length})
 
     return dict(new_stock_items=grid)
+
+
+def check_and_update_sales_order_status(waybill_items):
+
+    q = None
+    s = None
+
+    for item in waybill_items:
+        if item.reference and item.reference.startswith("SOI"):
+            sum_of_delivered = db(db.sales_order_item.reference==item.reference).select(db.sales_waybill_item.quantity.sum())
+            # TODO: update record in sales_order_item

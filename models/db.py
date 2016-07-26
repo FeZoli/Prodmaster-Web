@@ -192,6 +192,7 @@ db.define_table('waybill_item',
                 Field('product_name', 'string', length=32, notnull=True),
                 Field('unit', db.unit),
                 Field('quantity', 'double', notnull=True),
+                Field('reference', 'string', length=32),
                 Field('unit_price_recorded', 'double', notnull=True),
                 Field('serial_id', 'string', length=64, notnull=True,
                       compute=lambda r: str(db.waybill(r.waybill).date_of_delivery)),
@@ -310,6 +311,7 @@ db.manufacturing_order.place_to.represent = lambda id,row: db.place(id).name
 
 db.define_table('sales_order',
                 Field('partner', db.partner, label=T('Partner')),
+                Field('reference', 'string', length=32),
                 Field('place_of_delivery', 'string', length=64),
                 Field('worker', db.worker),
                 Field('car', db.car),
@@ -333,6 +335,7 @@ db.define_table('sales_order_item',
                 Field('bom', db.bom),
                 Field('unit', db.unit),
                 Field('quantity', 'double', notnull=True, label=T('Quantity')),
+                Field('fulfilled_quantity', 'double', label=T('Fulfilled Quantity')),
                 Field('remark', 'text', label=T('Remark'))
                 )
 
