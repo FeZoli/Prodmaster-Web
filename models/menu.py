@@ -9,30 +9,30 @@ is_general_manager = auth.has_membership('general manager')
 is_packaging_registrator = auth.has_membership('packaging registrator')
 is_public_market_manager = auth.has_membership('public market manager')
 
-index_menu = (T('Index'),URL('default','index')==URL(),URL('default','index'),[])
+index_menu = [T('Index'),URL('default','index')==URL(),URL('default','index'),[]]
 response.menu.append(index_menu)
 
 if is_general_manager:
-    basic_data_menu = (T('Basic Data'), True,URL('warehouse','index'),
+    basic_data_menu = [T('Basic Data'), True,URL('warehouse','index'),
      [(T('Partners'), True, URL('partners','index')),
       (T('Products'), True, URL('products','index')),
-     (T('Product Groups'), True, URL('product_groups','index'))])
+     (T('Product Groups'), True, URL('product_groups','index'))]]
     response.menu.append(basic_data_menu)
 
 if is_general_manager or is_packaging_registrator:
     actual_stock_submenu = []
     if is_general_manager:
-        actual_stock_submenu.append((T('Raw Materials'), True, URL('actual_stock','index', vars=dict(group=1))))
-    actual_stock_submenu.append((T('Finished Products'), True, URL('actual_stock','get_actual_stock_of_finished_product')))
-    actual_stock_submenu.append((T('Unfinished Products'), True, URL('actual_stock','get_actual_stock_of_unfinished_product')))
-    actual_stock_submenu.append((T('Packaging Materials'), True, URL('actual_stock','get_actual_stock_of_packaging_material')))
-    actual_stock_menu = (T('Actual Stock'), True, URL('actual_stock','index'), actual_stock_submenu)
+        actual_stock_submenu.append([T('Raw Materials'), True, URL('actual_stock','index', vars=dict(group=1))])
+    actual_stock_submenu.append([T('Finished Products'), True, URL('actual_stock','get_actual_stock_of_finished_product')])
+    actual_stock_submenu.append([T('Unfinished Products'), True, URL('actual_stock','get_actual_stock_of_unfinished_product')])
+    actual_stock_submenu.append([T('Packaging Materials'), True, URL('actual_stock','get_actual_stock_of_packaging_material')])
+    actual_stock_menu = [T('Actual Stock'), True, URL('actual_stock','index'), actual_stock_submenu]
     warehouse_additional_items = []
     warehouse_additional_items.append(actual_stock_menu)
     if is_general_manager:
-        warehouse_additional_items.append((T('Movements'), True, URL('movements','index')))
-        warehouse_additional_items.append((T('Waybills'), True, URL('waybills','index')))
-    warehouse_menu = (T('Warehouse'), True,URL('warehouse','index'), warehouse_additional_items) #, warehouse_additional_items)
+        warehouse_additional_items.append([T('Movements'), True, URL('movements','index')])
+        warehouse_additional_items.append([T('Waybills'), True, URL('waybills','index')])
+    warehouse_menu = [T('Warehouse'), True,URL('warehouse','index'), warehouse_additional_items] #, warehouse_additional_items)
     response.menu.append(warehouse_menu)
 
 if is_general_manager or is_packaging_registrator:
