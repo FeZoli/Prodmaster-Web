@@ -66,7 +66,8 @@ def get_details_link(args):
     return A(T('Details'), _href=url)
 
 
-@auth.requires_login()
+@auth.requires(auth.has_membership(role='general manager') or
+               auth.has_membership(role='packaging registrator'))
 def sales_orders():
     s = db((db.partner.id==db.sales_order.partner)&(db.sales_order.id==request.vars.sales_order))
     sales_order = s.select(db.partner.name,

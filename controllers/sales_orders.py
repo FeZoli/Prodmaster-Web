@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import local_settings
+import local_settings, stock
 
 
 @auth.requires_login()
@@ -84,3 +84,17 @@ def do_direct_delivery():
 
     redirect(URL(c='sales_waybills', f='index'))
     return
+
+
+@auth.requires(auth.has_membership(role='general manager') or
+               auth.has_membership(role='packaging registrator'))
+def check_order_fulfillment():
+    sales_order_items = []
+    sor = db.sales_order(request.vars.order_id)
+    for item in db(db.sales_order_item.sales_order==sor.id).select():
+        stock_data = stock.get_actual_stock_of_product(item.product)
+        sales_order_items.append(stock_data)
+        sales_order_items.append(item)
+
+
+    return dict(sales_order=sor, items=sales_order_items)

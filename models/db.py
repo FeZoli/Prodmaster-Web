@@ -292,7 +292,9 @@ db.define_table('manufacturing_order',
                 Field('place_from', db.place, label=T('Place From')),
                 Field('place_to', db.place, label=T('Place To')),
                 Field('status', db.waybill_status, writable=False, default=1, label=T('Status')),
-                Field('remark', 'text', label=T('Remark'))
+                Field('remark', 'text', label=T('Remark')),
+                Field('modified_by', db.auth_user, compute=lambda r: auth.user.id),
+                Field('modified_on', 'datetime', compute=lambda r: request.now)
                 )
 
 db.manufacturing_order.product.requires = IS_IN_DB(db(db.product.can_be_manufactured==True), db.product.id, '%(name)s')
