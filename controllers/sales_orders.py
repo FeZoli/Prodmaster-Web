@@ -91,10 +91,10 @@ def do_direct_delivery():
 def check_order_fulfillment():
     sales_order_items = []
     sor = db.sales_order(request.vars.order_id)
-    for item in db(db.sales_order_item.sales_order==sor.id).select():
-        stock_data = stock.get_actual_stock_of_product(item.product)
-        sales_order_items.append(stock_data)
-        sales_order_items.append(item)
+ #   for item in db(db.sales_order_item.sales_order==sor.id).select():
+ #       stock_data = stock.get_actual_stock_of_product(item.product)
+ #       sales_order_items.append(stock_data)
+ #       sales_order_items.append(item)
 
 
     return dict(sales_order=sor, items=sales_order_items)

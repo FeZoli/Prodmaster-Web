@@ -2,12 +2,14 @@
 
 from gluon import current
 from datetime import timedelta,date
-import dbdata
+import dbdata, locale
 
 #########################################################################
 ## This scaffolding model makes your app work on Google App Engine too
 ## File is released under public domain and you can use without limitations
 #########################################################################
+
+locale.setlocale(locale.LC_ALL, '')
 
 ## if SSL/HTTPS is properly configured and you want all HTTP requests to
 ## be redirected to HTTPS, uncomment the line below:
@@ -50,11 +52,11 @@ response.generic_patterns = ['*'] # if request.is_local else []
 
 #### module development purposes. Comment out, when finished!
 from gluon.custom_import import track_changes; track_changes(True)
-from gluon.tools import Auth, Service, PluginManager
+from gluon.tools import Auth #, Service, PluginManager
 
 auth = Auth(db)
-service = Service()
-plugins = PluginManager()
+#service = Service()
+#plugins = PluginManager()
 
 ## create all tables needed by auth if not custom tables
 auth.define_tables(username=True, signature=True)

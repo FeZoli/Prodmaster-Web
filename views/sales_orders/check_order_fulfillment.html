@@ -1,3 +1,9 @@
-{{page_header=T("Order Fulfillment Check")}}
 {{extend 'layout.html'}}
-{{=BEAUTIFY(response._vars)}}
+<h2>{{=T("Order Fulfillment Check")}}</h2>
+<h3>
+    {{=sales_order.partner.name}},&nbsp;
+    {{=sales_order.delivery_date.strftime("%Y.%b.%d (%a)")}},&nbsp;
+    {{=sales_order.place_of_delivery}},&nbsp;
+    {{=sales_order.worker.name}},&nbsp;
+    {{=sales_order.remark}}
+</h3>
