@@ -2,12 +2,14 @@
 
 from gluon import current
 from datetime import timedelta,date
-import dbdata
+import dbdata, locale
 
 #########################################################################
 ## This scaffolding model makes your app work on Google App Engine too
 ## File is released under public domain and you can use without limitations
 #########################################################################
+
+locale.setlocale(locale.LC_ALL, '')
 
 ## if SSL/HTTPS is properly configured and you want all HTTP requests to
 ## be redirected to HTTPS, uncomment the line below:
@@ -50,11 +52,11 @@ response.generic_patterns = ['*'] # if request.is_local else []
 
 #### module development purposes. Comment out, when finished!
 from gluon.custom_import import track_changes; track_changes(True)
-from gluon.tools import Auth, Service, PluginManager
+from gluon.tools import Auth #, Service, PluginManager
 
 auth = Auth(db)
-service = Service()
-plugins = PluginManager()
+#service = Service()
+#plugins = PluginManager()
 
 ## create all tables needed by auth if not custom tables
 auth.define_tables(username=True, signature=True)
@@ -192,6 +194,7 @@ db.define_table('waybill_item',
                 Field('product_name', 'string', length=32, notnull=True),
                 Field('unit', db.unit),
                 Field('quantity', 'double', notnull=True),
+                Field('reference', 'string', length=32),
                 Field('unit_price_recorded', 'double', notnull=True),
                 Field('serial_id', 'string', length=64, notnull=True,
                       compute=lambda r: str(db.waybill(r.waybill).date_of_delivery)),
@@ -291,7 +294,9 @@ db.define_table('manufacturing_order',
                 Field('place_from', db.place, label=T('Place From')),
                 Field('place_to', db.place, label=T('Place To')),
                 Field('status', db.waybill_status, writable=False, default=1, label=T('Status')),
-                Field('remark', 'text', label=T('Remark'))
+                Field('remark', 'text', label=T('Remark')),
+                Field('modified_by', db.auth_user, compute=lambda r: auth.user.id),
+                Field('modified_on', 'datetime', compute=lambda r: request.now)
                 )
 
 db.manufacturing_order.product.requires = IS_IN_DB(db(db.product.can_be_manufactured==True), db.product.id, '%(name)s')
@@ -310,6 +315,7 @@ db.manufacturing_order.place_to.represent = lambda id,row: db.place(id).name
 
 db.define_table('sales_order',
                 Field('partner', db.partner, label=T('Partner')),
+                Field('reference', 'string', length=32),
                 Field('place_of_delivery', 'string', length=64),
                 Field('worker', db.worker),
                 Field('car', db.car),
@@ -333,6 +339,7 @@ db.define_table('sales_order_item',
                 Field('bom', db.bom),
                 Field('unit', db.unit),
                 Field('quantity', 'double', notnull=True, label=T('Quantity')),
+                Field('fulfilled_quantity', 'double', label=T('Fulfilled Quantity')),
                 Field('remark', 'text', label=T('Remark'))
                 )
 
@@ -359,8 +366,9 @@ db.define_table('driver',
                 )
 
 db.define_table('daily_tour',
-                Field('partner', db.product),
+                Field('partner', db.partner),
                 Field('driver', db.driver),
+                Field('car', db.car),
                 Field('date', 'date', default=request.now),
                 Field('brutto_income', 'integer', writable=False, default=0),
                 Field('net_income', 'integer', writable=False, default=0),
@@ -368,8 +376,12 @@ db.define_table('daily_tour',
                 Field('cash2', 'integer', writable=False, default=0),
                 Field('deposit', 'integer', writable=False, default=0),
                 Field('rabatt', 'integer', writable=False, default=0),
+                Field('payed_weekly', 'integer', writable=False, default=0),
+                Field('payed_monthly', 'integer', writable=False, default=0),
+                Field('payed_monthly_date', 'date', default=request.now),
                 Field('delayed_weekly', 'integer', writable=False, default=0),
                 Field('delayed_monthly', 'integer', writable=False, default=0),
+                Field('delayed_monthly_date', 'date', default=request.now),
                 Field('remark', 'text')
                 )
 
@@ -377,6 +389,9 @@ db.daily_tour.partner.requires = IS_IN_DB(db, db.partner.id, '%(name)s')
 db.daily_tour.partner.represent = lambda id,row: db.partner(id).name
 db.daily_tour.driver.requires = IS_IN_DB(db, db.driver.id, '%(name)s')
 db.daily_tour.driver.represent = lambda id,row: db.driver(id).name
+db.daily_tour.car.requires = IS_IN_DB(db, db.car.id, '%(plate_number)s')
+db.daily_tour.car.represent = lambda id,row: db.car(id).plate_number
+
 
 db.define_table('daily_tour_import_mapping',
                 Field('product', db.product, unique=True),

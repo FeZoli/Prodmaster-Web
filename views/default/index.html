@@ -1,5 +1,5 @@
+{{page_header=T('Home')}}
 {{extend 'layout.html'}}
-
 <div style="width:100%;">
 <div id="orders" style="float:left;width:49.5%;background-color:lightgreen;">
 {{=T('Orders')}}
@@ -14,13 +14,22 @@
                       {{=order.worker.name}},&nbsp;
                       {{=order.car.plate_number}}</th>
     </tr>
-        {{for row in ods[order]:}}
-        <tr class="{{=tstyle}}">
-            <td>{{=row.product.name}}<br>{{=row.remark}}</td>
-            <td>{{=row.quantity}}&nbsp;{{=row.product.unit.name}}</td>
-        </tr>
-        {{pass}}
+    <tr class="{{=tstyle}}">
+        <th colspan=2>{{=order.remark}}</th>
+    </tr>
+    {{for row in ods[order]:}}
+    <tr class="{{=tstyle}}">
+        <td>{{=row.product.name}}<br>{{=row.remark}}</td>
+        <td>{{=row.quantity}}&nbsp;{{=row.product.unit.name}}</td>
+    </tr>
+    {{pass}}
 
+    <tr class="{{=tstyle}}">
+        <th colspan=2>
+            {{url=URL(a='sales_orders', c='check_order_fulfillment', vars=dict(order_id=order.id))}}
+            <form><input type="button" onClick="parent.location='{{=url}}'" value="{{=T('Check Fulfillment')}}"/></form>
+        </th>
+    </tr>
     {{if tstyle == "odd":}}
         {{tstyle = "even"}}
     {{else:}}
