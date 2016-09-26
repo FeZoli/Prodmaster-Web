@@ -366,8 +366,9 @@ db.define_table('driver',
                 )
 
 db.define_table('daily_tour',
-                Field('partner', db.product),
+                Field('partner', db.partner),
                 Field('driver', db.driver),
+                Field('car', db.car),
                 Field('date', 'date', default=request.now),
                 Field('brutto_income', 'integer', writable=False, default=0),
                 Field('net_income', 'integer', writable=False, default=0),
@@ -375,8 +376,12 @@ db.define_table('daily_tour',
                 Field('cash2', 'integer', writable=False, default=0),
                 Field('deposit', 'integer', writable=False, default=0),
                 Field('rabatt', 'integer', writable=False, default=0),
+                Field('payed_weekly', 'integer', writable=False, default=0),
+                Field('payed_monthly', 'integer', writable=False, default=0),
+                Field('payed_monthly_date', 'date', default=request.now),
                 Field('delayed_weekly', 'integer', writable=False, default=0),
                 Field('delayed_monthly', 'integer', writable=False, default=0),
+                Field('delayed_monthly_date', 'date', default=request.now),
                 Field('remark', 'text')
                 )
 
@@ -384,6 +389,9 @@ db.daily_tour.partner.requires = IS_IN_DB(db, db.partner.id, '%(name)s')
 db.daily_tour.partner.represent = lambda id,row: db.partner(id).name
 db.daily_tour.driver.requires = IS_IN_DB(db, db.driver.id, '%(name)s')
 db.daily_tour.driver.represent = lambda id,row: db.driver(id).name
+db.daily_tour.car.requires = IS_IN_DB(db, db.car.id, '%(plate_number)s')
+db.daily_tour.car.represent = lambda id,row: db.car(id).plate_number
+
 
 db.define_table('daily_tour_import_mapping',
                 Field('product', db.product, unique=True),
