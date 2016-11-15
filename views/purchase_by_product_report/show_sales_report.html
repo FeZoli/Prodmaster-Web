@@ -1,0 +1,15 @@
+{{extend 'layout.html'}}
+
+{{=sql}}
+
+<h3>Szűrő</h3>
+<table>
+    <tr><td>Kezdő dátum:</td><td>{{if vars.start_date:}}{{=vars.start_date}}{{pass}}</td></tr>
+    <tr><td>Vég dátum:</td><td>{{if vars.end_date:}}{{=vars.end_date}}{{pass}}</td></tr>
+
+</table>
+
+<h3>ÖSSZESEN</h3>
+<div class="web2py_grid"><div class="web2py_console">
+{{=grid}}
+    </div>

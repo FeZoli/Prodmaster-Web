@@ -241,6 +241,7 @@ db.define_table('stock',
                 )
 
 db.stock.product_id.requires = IS_IN_DB(db, db.product.id, '%(name)s')
+db.stock.product_id.represent = lambda id,row: db.product(id).name
 db.stock.unit.requires = IS_IN_DB(db, db.unit.id, '%(name)s')
 db.stock.place_from.requires = IS_IN_DB(db, db.place.id, '%(name)s')
 db.stock.place_to.requires = IS_IN_DB(db, db.place.id, '%(name)s')

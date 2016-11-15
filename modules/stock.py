@@ -27,7 +27,6 @@ def get_actual_stock_of_product(product_id=None, group_id=None):
         q = (db.stock.product_id==product.id)
         maxing = db.stock.id.max()
         stock_rows_max = s(q).select(maxing,
-                                     db.stock.serial_id,
                                      groupby=db.stock.serial_id
                                      )
 
@@ -42,9 +41,7 @@ def get_actual_stock_of_product(product_id=None, group_id=None):
         tablerow_sum['value_recorded'] = 0
 
         for stock_row in stock_rows_max:
-            # relevant_stock_ids.append(stock_row._extra[maxing])
-
-            q = (db.stock.product_id==product.id)&(db.stock.id==stock_row._extra[maxing])
+            q = (db.stock.id==stock_row._extra[maxing])
             stock_rows = db(q).select(db.stock.id,
                                       db.stock.product_id,
                                       db.stock.serial_id,
@@ -147,3 +144,50 @@ def get_value_of_product_in_manufacturing_order(mo_id, product_id):
 
     # lsql = db._lastsql
     return row._extra[sum_field]
+
+
+def get_actual_stock_of_place(place_id):
+    db = current.db
+    T = current.T
+
+    tabledata = []
+
+    q = (db.stock.place_to==place_id)
+    maxing = db.stock.id.max()
+    stock_rows_max = db(q).select(maxing,
+                                  groupby=db.stock.serial_id
+                                 )
+
+    ### prepare store for summary
+    #tablerow_sum = dict()
+    #tablerow_sum['id'] = ''
+    #tablerow_sum['product_name'] = product.name
+    #tablerow_sum['product_id'] = product.id
+    #tablerow_sum['quantity'] = 0.0
+    #tablerow_sum['serial_id'] = T('Total')
+    #tablerow_sum['unit_price'] = ''
+    #tablerow_sum['value_recorded'] = 0
+
+    for stock_row in stock_rows_max:
+        q = (db.stock.id==stock_row._extra[maxing])
+        stock_rows = db(q).select(db.stock.id,
+                                  db.stock.product_id,
+                                  db.stock.serial_id,
+                                  db.stock.new_quantity,
+                                  orderby=[db.stock.product_name,db.stock.serial_id])
+
+        for stock_row in stock_rows:
+            if stock_row.new_quantity > 0:
+                tablerow = dict()
+                tablerow['id'] = stock_row.id
+                #tablerow['product_name'] = product.name
+                tablerow['product_id'] = stock_row.product_id
+                tablerow['quantity'] = stock_row.new_quantity
+                tablerow['serial_id'] = stock_row.serial_id
+                tabledata.append(tablerow)
+                # tablerow_sum['quantity'] += stock_row.new_quantity
+                # tablerow_sum['value_recorded'] += round(stock_row.new_quantity*stock_row.unit_price_recorded)
+
+    #tabledata.append(tablerow_sum)
+
+    return dict(data=tabledata)
