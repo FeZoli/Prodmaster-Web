@@ -32,6 +32,7 @@ if is_general_manager or is_packaging_registrator:
     if is_general_manager:
         warehouse_additional_items.append([T('Movements'), True, URL('movements','index')])
         warehouse_additional_items.append([T('Waybills'), True, URL('waybills','index')])
+        warehouse_additional_items.append([T('Places'), True, URL('places','index')])
     warehouse_menu = [T('Warehouse'), True,URL('warehouse','index'), warehouse_additional_items] #, warehouse_additional_items)
     response.menu.append(warehouse_menu)
 
@@ -54,7 +55,10 @@ if is_general_manager:
     reports_menu = (T('Reports'), True, URL('reports','index'),
      [(T('Production'), True, URL('production_reports','index'),
       [(T('Daily performance'), True, URL('production_daily_performance_report','index'))]),
-      (T('Sales'), True, URL('sales_reports','index'))])
+       (T('Sales'), True, URL('sales_reports','index')),
+       (T('Purchase'), True, URL('purchase_reports','index'),
+        [(T('By product'), True, URL('purchase_by_product_report','index'))])
+     ])
     response.menu.append(reports_menu)
 
 if is_general_manager:
