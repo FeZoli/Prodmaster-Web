@@ -52,10 +52,13 @@ def get_source():
 def calculate_picking():
     mo = db.manufacturing_order(request.vars.id)
     product = db.product(mo.product)
-    if product.best_before_days > 45:
-        mo.best_before_date = mo.planned_date + relativedelta(months=int(round(product.best_before_days/30)))
-    else:
-        mo.best_before_date = mo.planned_date + timedelta(product.best_before_days)
+    #if product.best_before_days > 45:
+    #    mo.best_before_date = mo.planned_date + relativedelta(months=int(round(product.best_before_days/30)))
+    #else:
+    #    mo.best_before_date = mo.planned_date + timedelta(product.best_before_days)
+    #mo.best_before_date=None
+
+
     bom = db.bom(mo.bom)
     bom_items = db(db.bom_item.bom==bom.id).select()
     is_out_of_stock = False
@@ -147,6 +150,15 @@ def finish_manufacturing():
     mo = db.manufacturing_order(mo_id)
     date_of_production = request.vars.date_of_production
     best_before_date = request.vars.best_before_date
+    product_serial_id = best_before_date
+
+    if request.vars.serial_id:
+        product_serial_id = product_serial_id + "/" + request.vars.serial_id
+
+    if not best_before_date:
+        session.flash = "A minőségmegőrzés dátuma nincs kitöltve !"
+        new_vars = {'id' : mo.id }
+        redirect(URL('calculate_picking', vars=new_vars))
 
     # insert raw material movement
     for picking_item in request.vars:
@@ -170,11 +182,11 @@ def finish_manufacturing():
                                                                      limitby=(0,1)).last()
                 last_quantity = 0
                 last_place_id = 6 # alapanyag raktar
-                last_best_before_date = None
+                last_best_before_date = request.vars.best_before_date
                 if row:
                     last_quantity = row.stock.new_quantity
                     last_place = row.stock.place_to
-                    last_best_before_date = row.stock.best_before_date
+                #    last_best_before_date = row.stock.best_before_date
 
                 new_quantity = last_quantity-quantity
                 if new_quantity < 0.001:
@@ -195,7 +207,7 @@ def finish_manufacturing():
                                 place_to=last_place,
                                 date_of_delivery=date_of_production,
                                 serial_id=serial_id,
-                                best_before_date=last_best_before_date,
+                                best_before_date=best_before_date,
                                 unit_price_recorded=row.stock.unit_price_recorded,
                                 value_recorded=round(row.stock.unit_price_recorded*quantity),
                                 created=request.now,
@@ -203,7 +215,7 @@ def finish_manufacturing():
                                 )
 
     ### insert the newly manufactured product
-    q = (db.stock.product_id==request.vars.product_id) & (db.stock.serial_id==request.vars.serial_id)
+    q = (db.stock.product_id==request.vars.product_id) & (db.stock.serial_id==serial_id)
     row = db(q).select(db.stock.new_quantity,
                        orderby=~db.stock.id,
                        limitby=(0,1)).first()
@@ -226,7 +238,7 @@ def finish_manufacturing():
                     place_from=mo.place_from,
                     place_to=mo.place_to,
                     date_of_delivery=date_of_production,
-                    serial_id=request.vars.serial_id,
+                    serial_id=product_serial_id,
                     best_before_date=request.vars.best_before_date,
                     unit_price_recorded=product_recorded_price,
                     value_recorded=round(product_recorded_price*float(request.vars.product_quantity)),
