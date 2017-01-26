@@ -221,9 +221,11 @@ def import_data():
 
                     cell_value = 0
                     if cell.column in ('C', 'E', 'G', 'I', 'K', 'M', 'O'):
-                        cell_date = cell.value
+                        try: cell_date = cell.value
+                        except: pass
                     elif cell.column in ('D', 'F', 'H', 'J', 'L', 'N', 'P'):
-                        cell_value = cell.value
+                        try: cell_value = cell.value
+                        except: pass
 
                     if cell_value > 0 and cell_date != None:
                         product = db(db.daily_tour_import_mapping.row_number==cell.row).select(db.daily_tour_import_mapping.product).first().product

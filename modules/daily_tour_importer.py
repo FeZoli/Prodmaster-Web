@@ -107,7 +107,7 @@ sheetdata['tour_base']       = 'C37'
 
 def get_raw_data(filename, import_day="1"):
     from openpyxl import load_workbook
-    from openpyxl.shared.exc import CellCoordinatesException
+#    from openpyxl.shared.exc import CellCoordinatesException
 
     doc = load_workbook(filename=filename)
     sheet = doc.get_sheet_by_name(import_day)

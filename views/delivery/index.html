@@ -10,6 +10,6 @@
     {{=waybill_item_list}}
 </div>
 <div>
-    {{=FORM(INPUT(_type='submit', _value=T('Deliver')),
-                  _action='/' + request.application + '/delivery/do_delivery?waybill=' + waybill)}}
+  {{=FORM(INPUT(_type='submit', _value=T('Deliver')),
+                _action='/' + request.application + '/delivery/do_delivery?waybill=' + waybill)}}
 </div>

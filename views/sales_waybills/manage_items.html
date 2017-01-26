@@ -9,15 +9,14 @@
 
 {{if is_list:}}
 
-
-
-    <div style="width:100%;text-align:right;">
+    <div style="width:100%;text-align:middle;">
         {{url = URL('import_data')}}
         <form action="{{=url}}" method="post" enctype="multipart/form-data">
-            <input name="upload" type="file" size="60" maxlength="100000" />
-            {{=T('Day:')}}&nbsp;<input name="import_day" size="2" /></br>
-            <input name="waybill" type="hidden" value="{{=request.vars.waybill}}" />
-            <input type="submit" value="{{=T('Import data from file')}}" />
+          <input name="upload" type="file" size="60" maxlength="100000" /></br>
+          {{=T('Day:')}}&nbsp;<input name="import_day" size="2" /></br>
+          <input name="waybill" type="hidden" value="{{=request.vars.waybill}}" />
+	  <input name="forced_picking" type="checkbox">Eroltetett</input></br>
+          <input type="submit" value="{{=T('Import data from file')}}" />
         </form>
     </div>
 {{pass}}

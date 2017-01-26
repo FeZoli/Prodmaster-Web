@@ -4,7 +4,8 @@ from gluon import *
 from gluon.tools import Crud
 
 
-def get_actual_stock_of_product(product_id=None, group_id=None):
+def get_actual_stock_of_product(product_id=None, group_id=None, max_serial_id=None):
+    '''max_serial_id: actual stock processed with or earlier than this id'''
     db = current.db
     T = current.T
     query = (db.product)
@@ -25,6 +26,8 @@ def get_actual_stock_of_product(product_id=None, group_id=None):
     for product in product_rows:
         s = db(db.stock==db.product)
         q = (db.stock.product_id==product.id)
+        if max_serial_id:
+            q &= (db.stock.serial_id<=max_serial_id)
         maxing = db.stock.id.max()
         stock_rows_max = s(q).select(maxing,
                                      groupby=db.stock.serial_id
@@ -93,6 +96,19 @@ def get_stock_id_of_product_by_serial_id(product_id, serial_id):
         return row.id
 
     return 0
+
+
+def get_stock_ids_of_product_with_and_before_serial_id(product_id, serial_id):
+    stock_id_list = []
+    db = current.db
+    query = (db.stock.product_id==product_id) & (db.stock.serial_id<=serial_id) & (db.stock.new_quantity > 0)
+    rows = db(query).select(db.stock.id,
+                           orderby=~db.stock.id)
+
+    for row in rows:
+        stock_id_list.append(row.id)
+
+    return stock_id_list
 
 
 def get_last_or_recorded_price_of_product(product_id, partner_id=None):

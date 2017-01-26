@@ -200,7 +200,7 @@ db.define_table('waybill_item',
                       compute=lambda r: str(db.waybill(r.waybill).date_of_delivery)),
                 Field('best_before_date', 'date'),
                 Field('value_recorded', 'double', writable=False, notnull=True,
-                      compute=lambda r: r.quantity*r.unit_price_recorded),
+                      compute=lambda r: float(r.quantity)*float(r.unit_price_recorded)),
                 Field('remark', 'text')
                 )
 

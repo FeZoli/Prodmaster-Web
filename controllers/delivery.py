@@ -34,39 +34,52 @@ def do_delivery():
     waybill_items = db(db.waybill_item.waybill==waybill.id).select()
 
     source_reference = 'SWB/' + str(waybill.id)
-    last_quantity = 0.0
-
 
     for item in waybill_items:
-        last_quantity = stock.get_stock_of_product_by_serial_id(product_id=item.product, serial_id=item.serial_id)
+        batches_of_product = stock.get_actual_stock_of_product(product_id=item.product, max_serial_id=item.serial_id)
+        rest_quantity = item.quantity
 
-        if last_quantity < item.quantity:
-            session.flash = T('Not enough stock of product: ') + item.product_name + ", " + item.serial_id + " Nr.:" + str(item.id)
-            db(db.waybill.id==waybill.id).update(status=1) #recorded
-            db(db.stock.source_reference == source_reference).delete()
-            redirect(URL(c='sales_waybills', f='manage_items', vars=dict(waybill=request.vars.waybill)))
-            return
+        for batch in reversed(batches_of_product["data"]):
+            if batch["serial_id"] == "Total": continue ### TODO: complete rewrite of library !
 
-        db.stock.insert(product_id=item.product,
-                        product_name=item.product_name,
-                        unit=item.unit,
-                        quantity_change=0-item.quantity,
-                        new_quantity=round(last_quantity-item.quantity, 3),
-                        source_partner_id=0,
-                        source_partner_name='Ostya 84',
-                        source_doc_id=waybill.id,
-                        source_reference=source_reference,
-                        target_partner_id=partner.id,
-                        target_partner_name=partner.name,
-                        date_of_delivery=waybill.date_of_delivery,
-                        serial_id=item.serial_id,
-                        created=request.now,
-                        remark=''
-                        )
+            quantity_change = 0
+            new_quantity = 0
+            
+            if rest_quantity > batch["quantity"]:
+                quantity_change = -batch["quantity"]
+                new_quantity = 0
+            else:
+                quantity_change = -rest_quantity
+                new_quantity =  batch["quantity"] - rest_quantity
+
+            rest_quantity -= batch["quantity"]
+                
+            db.stock.insert(product_id=item.product,
+                            product_name=item.product_name,
+                            unit=item.unit,
+                            quantity_change=quantity_change,
+                            new_quantity=new_quantity,
+                            source_partner_id=0,
+                            source_partner_name='Ostya 84',
+                            source_doc_id=waybill.id,
+                            source_reference=source_reference,
+                            target_partner_id=partner.id,
+                            target_partner_name=partner.name,
+                            date_of_delivery=waybill.date_of_delivery,
+                            serial_id=batch["serial_id"],
+                            created=request.now,
+                            remark=''
+                            )
+
+            if rest_quantity <= 0:
+                '''No more stock cycle is necessary'''
+                break
+            
+            pass
+        pass # End of for
 
     db(db.waybill.id==waybill.id).update(status=2) #delivered
-
-    check_and_update_sales_order_status(waybill_items)
+    check_and_update_sales_order_status(waybill_items)    
 
     f = [db.stock.product_name,
          db.stock.unit,
