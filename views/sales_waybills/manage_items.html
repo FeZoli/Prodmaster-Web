@@ -3,27 +3,18 @@
 <h3>
     {{=db.partner[waybill.partner].name}}, {{=waybill.date_of_delivery}}
 </h3>
-<div>
-    {{=intake_link}}
-</div>
 
 {{if is_list:}}
-
-    <div style="width:100%;text-align:middle;">
-        {{url = URL('import_data')}}
-        <form action="{{=url}}" method="post" enctype="multipart/form-data">
-          <input name="upload" type="file" size="60" maxlength="100000" /></br>
-          {{=T('Day:')}}&nbsp;<input name="import_day" size="2" /></br>
-          <input name="waybill" type="hidden" value="{{=request.vars.waybill}}" />
-	  <input name="forced_picking" type="checkbox">Eroltetett</input></br>
-          <input type="submit" value="{{=T('Import data from file')}}" />
-        </form>
-    </div>
+{{=upload_form}}
+<hr />
 {{pass}}
+
+{{=delivery_form}}
 
 {{if form:}}
     {{=form}}
 {{pass}}
+
 
 {{if not is_list:}}
     <script src="{{=URL('static','js/update_stock_fields.js')}}"></script>

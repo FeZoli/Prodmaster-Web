@@ -60,11 +60,19 @@ def pick():
     return dict(grid=grid)
 
 
-def get_intake_link(args):
+def get_intake_url(args):
     if db.waybill(args.id).status != 1 : return '' # intake only if recorded
+    url = URL(c='delivery',
+              f='do_delivery',
+              vars=dict(waybill=args.id))
+    return url
 
-    url = '/' + request.application + '/delivery/do_delivery?waybill=' + str(args.id)
-    return A(T('Deliver'), _href=url)
+def get_intake_link(args):
+    link = get_intake_url(args)
+    if link:
+        return A(T('Deliver'), _href=get_intake_url(args))
+    else:
+        return '' 
 
 def get_items_link(args):
     url = URL('manage_items', vars=dict(waybill=args.id))
@@ -111,7 +119,20 @@ def manage_items():
                         deletable=False,
                         links=links)
     waybill = db.waybill(request.vars.waybill)
-    return dict(waybill=waybill, form=grid, is_list=True, intake_link=get_intake_link(waybill))
+
+    delivery_form = FORM(TABLE(TR(T('Force Picking'), INPUT(_type='checkbox', _name='forced_picking', value=False)),
+                               TR(INPUT(_type='submit',  _value=T('Deliver')))),
+                         _action=get_intake_url(waybill),
+                        )
+
+    upload_form = FORM(TABLE(TR(T('Day of Month'), INPUT(_name='import_day', _size=2)),
+                             TR(INPUT(_type='file', _name='upload', _size=60, _maxlength=100000)),
+                             TR(INPUT(_type='hidden', _name='waybill', _value=request.vars.waybill)),
+                             TR(INPUT(_type='submit', _value=T('Import data from file')))),
+                       _action=URL('import_data'),
+                      )
+    
+    return dict(waybill=waybill, form=grid, is_list=True, delivery_form=delivery_form, upload_form=upload_form)
 
 
 def new(args):

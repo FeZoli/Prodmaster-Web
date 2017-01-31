@@ -42,6 +42,13 @@ def do_delivery():
         for batch in reversed(batches_of_product["data"]):
             if batch["serial_id"] == "Total": continue ### TODO: complete rewrite of library !
 
+            if not request.vars.forced_picking and batch["quantity"] < item.quantity:
+                session.flash = T('Not enough stock of product: ') + item.product_name + ", " + item.serial_id + " Nr.:" + str(item.id)
+                db(db.waybill.id==waybill.id).update(status=1) #recorded
+                db(db.stock.source_reference == source_reference).delete()
+                redirect(URL(c='sales_waybills', f='manage_items', vars=dict(waybill=request.vars.waybill)))
+                return
+            
             quantity_change = 0
             new_quantity = 0
             
